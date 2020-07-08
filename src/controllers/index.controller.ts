@@ -1,11 +1,12 @@
 import { Pool } from 'pg';
 
+
 const pool = new Pool({
-    host: 'localhost',
+    host: process.env.DBHOST || 'localhost',
     port: 5432,
-    user: 'postgres',
-    password: 'du3nak7Q7LdaPGr',
-    database: 'brujuladb'
+    user: process.env.DBUSER || 'postgres',
+    password: process.env.DBPASS || 'du3nak7Q7LdaPGr',
+    database: process.env.DBNAME || 'brujuladb'
 });
 
 export async function getUsers(req: any, res: any) {
