@@ -3,7 +3,7 @@ import { router } from "./routes/index";
 import bodyParser from "body-parser";
 
 const app = express();
-const port = 4000; // default port to listen
+const port = process.env.PORT || 4000; // default port to listen
 
 // middlewares
 app.use(bodyParser.json());
