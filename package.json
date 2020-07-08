@@ -21,7 +21,8 @@
     "pg": "^8.2.1",
     "tslint": "^6.1.2",
     "ts-node": "^8.10.2",
-    "typescript": "^3.9.6"
+    "typescript": "^3.9.6",
+    "@types/express": "^4.17.7"
   },
   "devDependencies": {
     "@types/express": "^4.17.7",
