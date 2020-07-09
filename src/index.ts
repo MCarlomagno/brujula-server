@@ -1,11 +1,14 @@
 import express from "express";
 import { router } from "./routes/index";
 import bodyParser from "body-parser";
+import cors from 'cors';
 
 const app = express();
+
 const port = process.env.PORT || 4000; // default port to listen
 
 // middlewares
+app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
@@ -16,4 +19,4 @@ app.listen(port, () => {
 });
 
 // Routes
-app.use(router);
+app.use('/api',router);
