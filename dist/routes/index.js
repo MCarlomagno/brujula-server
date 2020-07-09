@@ -9,4 +9,5 @@ exports.router.get('/getUserById/:id', index_controller_1.getUserById);
 exports.router.post('/users', index_controller_1.postUsers);
 exports.router.delete('/users/:id', index_controller_1.deleteUser);
 exports.router.put('/users/:id', index_controller_1.updateUser);
+exports.router.post('/users/login', index_controller_1.loginUser);
 //# sourceMappingURL=index.js.map

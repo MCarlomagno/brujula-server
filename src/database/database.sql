@@ -6,5 +6,15 @@ CREATE TABLE users (
     email VARCHAR(50)
 );
 
-INSERT INTO users (nombre, email) VALUES
-('joe', 'joe@ibm.com');
+ALTER TABLE users ADD COLUMN password TEXT NOT NULL;
+
+CREATE EXTENSION pgcrypto;
+
+/* SAMPLE QUERIES */
+INSERT INTO users (nombre, email, password) VALUES (
+    'Jon',
+  'jon@doe.com',
+  crypt('jon', gen_salt('bf'))
+);
+
+SELECT id FROM users WHERE email = 'jon@doe.com' AND password = crypt('jon', password);
