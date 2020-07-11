@@ -1,3 +1,3 @@
 # brujula-server
 
-To install clone and run npm install
+Server application writen in node.js for brujula coworking.
