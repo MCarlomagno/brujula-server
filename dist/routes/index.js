@@ -2,12 +2,19 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.router = void 0;
 const express_1 = require("express");
-const index_controller_1 = require("../controllers/index.controller");
+const users_controller_1 = require("../controllers/users.controller");
+const coworkers_controller_1 = require("../controllers/coworkers.controller");
+const groups_controller_1 = require("../controllers/groups.controller");
 exports.router = express_1.Router();
-exports.router.get('/users', index_controller_1.getUsers);
-exports.router.get('/getUserById/:id', index_controller_1.getUserById);
-exports.router.post('/users', index_controller_1.postUsers);
-exports.router.delete('/users/:id', index_controller_1.deleteUser);
-exports.router.put('/users/:id', index_controller_1.updateUser);
-exports.router.post('/users/login', index_controller_1.loginUser);
+/// Users
+exports.router.get('/users', users_controller_1.getUsers);
+exports.router.get('/getUserById/:id', users_controller_1.getUserById);
+exports.router.post('/users', users_controller_1.postUsers);
+exports.router.delete('/users/:id', users_controller_1.deleteUser);
+exports.router.put('/users/:id', users_controller_1.updateUser);
+exports.router.post('/users/login', users_controller_1.loginUser);
+/// Coworkers
+exports.router.get('/coworkers', coworkers_controller_1.getCoworkers);
+/// Groups
+exports.router.get('/groups', groups_controller_1.getGroups);
 //# sourceMappingURL=index.js.map
