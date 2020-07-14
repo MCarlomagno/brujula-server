@@ -21,7 +21,8 @@ const pool = new pg_1.Pool({
 });
 function getCoworkers(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        const queryResult = yield pool.query('SELECT nombre, apellido, email FROM users WHERE is_coworker = true');
+        const query = 'SELECT u.nombre, u.apellido, u.email, p.horas_sala, u.horas_sala_consumidas FROM users u INNER JOIN plans p ON u.id_plan = p.id WHERE is_coworker = true';
+        const queryResult = yield pool.query(query);
         console.log(queryResult.rows);
         res.json(queryResult.rows);
     });

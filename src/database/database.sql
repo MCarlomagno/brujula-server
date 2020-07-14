@@ -62,3 +62,20 @@ CREATE TABLE groups (
 	cuit_cuil VARCHAR(20),
 	FOREIGN KEY (id_lider) REFERENCES users (id)
 );
+
+ALTER TABLE plans ADD COLUMN nombre VARCHAR(40);
+ALTER TABLE plans ADD COLUMN descripcion VARCHAR(255);
+
+ALTER TABLE users ADD COLUMN horas_sala_consumidas REAL;
+
+ALTER TABLE plans 
+RENAME COLUMN hoas_sala TO horas_sala;
+
+INSERT INTO plans (horas_sala, is_custom, nombre, descripcion) 
+VALUES (2, false, 'Movil x 6', 'Puesto de trabajo movil 6 horas al dia'),
+(4, false, 'Movil x 12', 'Puesto de trabajo movil 12 horas al dia'),
+(4, false, 'Fijo x 12', 'Puesto de trabajo fijo 12 horas al dia'),
+(4, false, 'Oficina Privada', 'Oficina privada 12 horas al dia');
+
+/* ejemplo horas sala disponibles */
+SELECT u.nombre, (p.horas_sala - u.horas_sala_consumidas) as horas_disponibles FROM users u INNER JOIN plans p ON u.id_plan = p.id;

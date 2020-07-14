@@ -12,7 +12,8 @@ const pool = new Pool({
 
 
 export async function getCoworkers(req: any, res: any) {
-    const queryResult = await pool.query('SELECT nombre, apellido, email FROM users WHERE is_coworker = true');
+    const query = 'SELECT u.nombre, u.apellido, u.email, p.horas_sala, u.horas_sala_consumidas FROM users u INNER JOIN plans p ON u.id_plan = p.id WHERE is_coworker = true';
+    const queryResult = await pool.query(query);
     console.log(queryResult.rows);
     res.json(queryResult.rows);
 }
