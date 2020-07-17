@@ -79,3 +79,27 @@ VALUES (2, false, 'Movil x 6', 'Puesto de trabajo movil 6 horas al dia'),
 
 /* ejemplo horas sala disponibles */
 SELECT u.nombre, (p.horas_sala - u.horas_sala_consumidas) as horas_disponibles FROM users u INNER JOIN plans p ON u.id_plan = p.id;
+
+-- PUESTOS
+CREATE TABLE puestos (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(40)
+);
+
+-- USERS_PUESTOS
+CREATE TABLE users_puestos (
+    id SERIAL PRIMARY KEY,
+    id_user INTEGER,
+	id_puesto INTEGER,
+	hora_desde TIME,
+	hora_hasta TIME,
+	fecha_desde TIME,
+	fecha_hasta TIME,
+	lunes BOOLEAN,
+	martes BOOLEAN,
+	miercoles BOOLEAN,
+	jueves BOOLEAN,
+	viernes BOOLEAN,
+	FOREIGN KEY (id_user) REFERENCES users (id),
+	FOREIGN KEY (id_puesto) REFERENCES puestos (id)
+);
