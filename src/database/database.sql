@@ -62,3 +62,54 @@ CREATE TABLE groups (
 	cuit_cuil VARCHAR(20),
 	FOREIGN KEY (id_lider) REFERENCES users (id)
 );
+
+ALTER TABLE plans ADD COLUMN nombre VARCHAR(40);
+ALTER TABLE plans ADD COLUMN descripcion VARCHAR(255);
+
+ALTER TABLE users ADD COLUMN horas_sala_consumidas REAL;
+
+ALTER TABLE plans 
+RENAME COLUMN hoas_sala TO horas_sala;
+
+INSERT INTO plans (horas_sala, is_custom, nombre, descripcion) 
+VALUES (2, false, 'Movil x 6', 'Puesto de trabajo movil 6 horas al dia'),
+(4, false, 'Movil x 12', 'Puesto de trabajo movil 12 horas al dia'),
+(4, false, 'Fijo x 12', 'Puesto de trabajo fijo 12 horas al dia'),
+(4, false, 'Oficina Privada', 'Oficina privada 12 horas al dia');
+
+/* ejemplo horas sala disponibles */
+SELECT u.nombre, (p.horas_sala - u.horas_sala_consumidas) as horas_disponibles FROM users u INNER JOIN plans p ON u.id_plan = p.id;
+
+-- PUESTOS
+CREATE TABLE puestos (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(40)
+);
+
+-- USERS_PUESTOS
+CREATE TABLE users_puestos (
+    id SERIAL PRIMARY KEY,
+    id_user INTEGER,
+	id_puesto INTEGER,
+	hora_desde TIME,
+	hora_hasta TIME,
+	fecha_desde TIME,
+	fecha_hasta TIME,
+	lunes BOOLEAN,
+	martes BOOLEAN,
+	miercoles BOOLEAN,
+	jueves BOOLEAN,
+	viernes BOOLEAN,
+	FOREIGN KEY (id_user) REFERENCES users (id),
+	FOREIGN KEY (id_puesto) REFERENCES puestos (id)
+);
+
+-- ADD ID GROUP COLUMN 
+ALTER TABLE users ADD column id_grupo INTEGER;
+
+-- ADD disponible to puestos table
+ALTER TABLE puestos ADD COLUMN disponible BOOLEAN;
+
+-- CHANGE fecha_desde and fecha_hasta DATA TYPES
+ALTER TABLE users_puestos ALTER COLUMN fecha_desde TYPE DATE USING '2020-07-18T03:00:00.000Z';
+ALTER TABLE users_puestos ALTER COLUMN fecha_hasta TYPE DATE USING '2020-07-18T03:00:00.000Z';
