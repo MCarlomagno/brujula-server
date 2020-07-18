@@ -15,6 +15,7 @@ exports.router.put('/users/:id', users_controller_1.updateUser);
 exports.router.post('/users/login', users_controller_1.loginUser);
 /// Coworkers
 exports.router.get('/coworkers', coworkers_controller_1.getCoworkers);
+exports.router.post('/coworkers', coworkers_controller_1.createCoworker);
 /// Groups
 exports.router.get('/groups', groups_controller_1.getGroups);
 //# sourceMappingURL=index.js.map

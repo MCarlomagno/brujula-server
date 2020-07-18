@@ -103,3 +103,13 @@ CREATE TABLE users_puestos (
 	FOREIGN KEY (id_user) REFERENCES users (id),
 	FOREIGN KEY (id_puesto) REFERENCES puestos (id)
 );
+
+-- ADD ID GROUP COLUMN 
+ALTER TABLE users ADD column id_grupo INTEGER;
+
+-- ADD disponible to puestos table
+ALTER TABLE puestos ADD COLUMN disponible BOOLEAN;
+
+-- CHANGE fecha_desde and fecha_hasta DATA TYPES
+ALTER TABLE users_puestos ALTER COLUMN fecha_desde TYPE DATE USING '2020-07-18T03:00:00.000Z';
+ALTER TABLE users_puestos ALTER COLUMN fecha_hasta TYPE DATE USING '2020-07-18T03:00:00.000Z';
