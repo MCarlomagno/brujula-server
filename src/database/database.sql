@@ -113,3 +113,9 @@ ALTER TABLE puestos ADD COLUMN disponible BOOLEAN;
 -- CHANGE fecha_desde and fecha_hasta DATA TYPES
 ALTER TABLE users_puestos ALTER COLUMN fecha_desde TYPE DATE USING '2020-07-18T03:00:00.000Z';
 ALTER TABLE users_puestos ALTER COLUMN fecha_hasta TYPE DATE USING '2020-07-18T03:00:00.000Z';
+
+-- ADD created at value to users
+ALTER TABLE users ADD COLUMN created_at TIMESTAMP;
+
+-- ADD saturday to days
+ALTER TABLE users_puestos ADD COLUMN sabado BOOLEAN DEFAULT false;
