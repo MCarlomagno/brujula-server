@@ -12,7 +12,7 @@ const pool = new Pool({
 
 
 export async function getGroups(req: any, res: any) {
-    const queryResult = await pool.query('SELECT id, nombre FROM groups');
+    const queryResult = await pool.query('SELECT id, nombre, id_lider FROM groups');
     console.log(queryResult.rows);
     res.json(queryResult.rows);
 }
