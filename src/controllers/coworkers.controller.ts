@@ -23,7 +23,7 @@ export async function getCoworkers(req: any, res: any) {
     // selects data for table loading
     // in the where, matches the filter value with nombre, apellido and email
     // LIMIT gets the items and number of page
-    const query = `SELECT u.nombre, u.apellido, u.email, p.horas_sala, u.horas_sala_consumidas
+    const query = `SELECT u.id, u.nombre, u.apellido, u.email, p.horas_sala, u.horas_sala_consumidas
                     FROM users u INNER JOIN plans p ON u.id_plan = p.id
                     WHERE is_coworker = true AND (LOWER(u.nombre) LIKE '%' || LOWER($3) || '%' OR LOWER(u.apellido) LIKE '%' || LOWER($3) || '%' OR LOWER(u.email) LIKE '%' || LOWER($3) ||'%')
                     ORDER BY u.created_at DESC
@@ -38,6 +38,12 @@ export async function getCoworkersCount(req: any, res: any) {
     res.json(queryResult.rows[0]);
 }
 
+export async function getCoworkerById(req: any, res: any) {
+    const id = req.params.id;
+    const query = 'SELECT nombre, email, apellido, dni, fecha_nacimiento, direccion, celular, id_plan, horas_sala_consumidas, id_grupo FROM users WHERE id = $1';
+    const queryResult = await pool.query(query, [id]);
+    res.json(queryResult.rows[0]);
+}
 
 /// createCoworker
 /// 1. Create coworker (insert)

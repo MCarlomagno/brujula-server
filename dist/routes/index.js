@@ -16,6 +16,7 @@ exports.router.post('/users/login', users_controller_1.loginUser);
 /// Coworkers
 exports.router.get('/coworkers', coworkers_controller_1.getCoworkers);
 exports.router.get('/coworkers/count', coworkers_controller_1.getCoworkersCount);
+exports.router.get('/coworkers/getById/:id', coworkers_controller_1.getCoworkerById);
 exports.router.post('/coworkers', coworkers_controller_1.createCoworker);
 /// Groups
 exports.router.get('/groups', groups_controller_1.getGroups);

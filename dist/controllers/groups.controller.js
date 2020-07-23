@@ -21,7 +21,7 @@ const pool = new pg_1.Pool({
 });
 function getGroups(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        const queryResult = yield pool.query('SELECT id, nombre FROM groups');
+        const queryResult = yield pool.query('SELECT id, nombre, id_lider FROM groups');
         console.log(queryResult.rows);
         res.json(queryResult.rows);
     });

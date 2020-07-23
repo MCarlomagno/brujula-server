@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createCoworker = exports.getCoworkersCount = exports.getCoworkers = void 0;
+exports.createCoworker = exports.getCoworkerById = exports.getCoworkersCount = exports.getCoworkers = void 0;
 const pg_1 = require("pg");
 const pool = new pg_1.Pool({
     host: process.env.DBHOST || 'localhost',
@@ -29,7 +29,7 @@ function getCoworkers(req, res) {
         // selects data for table loading
         // in the where, matches the filter value with nombre, apellido and email
         // LIMIT gets the items and number of page
-        const query = `SELECT u.nombre, u.apellido, u.email, p.horas_sala, u.horas_sala_consumidas
+        const query = `SELECT u.id, u.nombre, u.apellido, u.email, p.horas_sala, u.horas_sala_consumidas
                     FROM users u INNER JOIN plans p ON u.id_plan = p.id
                     WHERE is_coworker = true AND (LOWER(u.nombre) LIKE '%' || LOWER($3) || '%' OR LOWER(u.apellido) LIKE '%' || LOWER($3) || '%' OR LOWER(u.email) LIKE '%' || LOWER($3) ||'%')
                     ORDER BY u.created_at DESC
@@ -47,6 +47,15 @@ function getCoworkersCount(req, res) {
     });
 }
 exports.getCoworkersCount = getCoworkersCount;
+function getCoworkerById(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const id = req.params.id;
+        const query = 'SELECT nombre, email, apellido, dni, fecha_nacimiento, direccion, celular, id_plan, horas_sala_consumidas, id_grupo FROM users WHERE id = $1';
+        const queryResult = yield pool.query(query, [id]);
+        res.json(queryResult.rows[0]);
+    });
+}
+exports.getCoworkerById = getCoworkerById;
 /// createCoworker
 /// 1. Create coworker (insert)
 /// 2. If its group leader update group (update)
