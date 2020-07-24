@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createCoworker = exports.getCoworkerById = exports.getCoworkersCount = exports.getCoworkers = void 0;
+exports.updateCoworker = exports.createCoworker = exports.getCoworkerById = exports.getCoworkersCount = exports.getCoworkers = void 0;
 const pg_1 = require("pg");
 const pool = new pg_1.Pool({
     host: process.env.DBHOST || 'localhost',
@@ -47,12 +47,65 @@ function getCoworkersCount(req, res) {
     });
 }
 exports.getCoworkersCount = getCoworkersCount;
+///  returns the user, user_puesto, plan and group (if exist) by user id
 function getCoworkerById(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const id = req.params.id;
-        const query = 'SELECT nombre, email, apellido, dni, fecha_nacimiento, direccion, celular, id_plan, horas_sala_consumidas, id_grupo FROM users WHERE id = $1';
-        const queryResult = yield pool.query(query, [id]);
-        res.json(queryResult.rows[0]);
+        // Variables to be returned
+        let coworker;
+        let plan;
+        let group;
+        let userPuesto;
+        try {
+            // users query
+            const query = 'SELECT id, nombre, email, apellido, dni, fecha_nacimiento, direccion, celular, id_plan, horas_sala_consumidas, id_grupo FROM users WHERE id = $1';
+            const coworkerQueryResult = yield pool.query(query, [id]);
+            coworker = coworkerQueryResult.rows[0];
+        }
+        catch (err) {
+            console.log('error querying coworker');
+            console.log(err);
+        }
+        try {
+            // plans query
+            const query = 'SELECT id, horas_sala, is_custom, nombre, descripcion FROM plans WHERE id = $1';
+            const coworkerQueryResult = yield pool.query(query, [coworker.id_plan]);
+            plan = coworkerQueryResult.rows[0];
+        }
+        catch (err) {
+            console.log('error querying plan');
+            console.log(err);
+        }
+        if (coworker.id_grupo) {
+            try {
+                // groups query
+                const query = 'SELECT id, id_lider, nombre, cuit_cuil FROM groups WHERE id = $1';
+                const coworkerQueryResult = yield pool.query(query, [coworker.id_grupo]);
+                group = coworkerQueryResult.rows[0];
+            }
+            catch (err) {
+                console.log('error querying groups');
+                console.log(err);
+            }
+        }
+        try {
+            // users_puestos query
+            const query = 'SELECT id, id_user, id_puesto, hora_desde, hora_hasta, fecha_desde, fecha_hasta, lunes, martes, miercoles, jueves, viernes, sabado FROM users_puestos WHERE id_user = $1';
+            const coworkerQueryResult = yield pool.query(query, [id]);
+            userPuesto = coworkerQueryResult.rows[0];
+        }
+        catch (err) {
+            console.log('error querying userPuesto');
+            console.log(err);
+        }
+        const result = {
+            success: true,
+            coworker,
+            plan,
+            userPuesto,
+            group
+        };
+        res.json(result);
     });
 }
 exports.getCoworkerById = getCoworkerById;
@@ -122,4 +175,65 @@ function createCoworker(req, res) {
     });
 }
 exports.createCoworker = createCoworker;
+/// updates coworker, usersPuestos and/or plan if someone is in the req.
+function updateCoworker(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const coworker = req.body.coworker;
+        const usersPuestos = req.body.usersPuestos;
+        const selectedPlan = req.body.selectedPlan;
+        const idCoworker = req.params.id;
+        try {
+            if (selectedPlan) {
+                // insert query to plans
+                const insertPlanQuery = "INSERT INTO plans (horas_sala, is_custom, nombre, descripcion) VALUES ($1, $2, $3, $4) RETURNING id;";
+                const insertPlanQueryResult = yield pool.query(insertPlanQuery, [selectedPlan.horas_sala, selectedPlan.is_custom, selectedPlan.nombre, selectedPlan.descripcion]);
+                selectedPlan.id = insertPlanQueryResult.rows[0].id;
+                if (coworker) {
+                    coworker.id_plan = insertPlanQueryResult.rows[0].id;
+                }
+                else {
+                    const updateCoworkerAfterPlansQuery = "UPDATE users SET id_plan = $2 WHERE id = $1";
+                    const queryResult = yield pool.query(updateCoworkerAfterPlansQuery, [idCoworker, selectedPlan.id]);
+                }
+                console.log('plan created');
+            }
+            // update query to users
+            if (coworker) {
+                console.log('coworker');
+                console.log(coworker);
+                const updateCoworkerQuery = "UPDATE users SET nombre = $2, apellido = $3, email = $4, id_grupo = $5, dni = $6, fecha_nacimiento = $7, direccion = $8, celular = $9, id_plan = $10 WHERE id = $1";
+                const queryResult = yield pool.query(updateCoworkerQuery, [coworker.id, coworker.nombre, coworker.apellido, coworker.email, coworker.id_grupo, coworker.dni, coworker.fecha_nacimiento, coworker.direccion, coworker.celular, coworker.id_plan]);
+                console.log('coworker updated');
+            }
+            if (usersPuestos) {
+                const horaDesde = usersPuestos.hora_desde.hours + ':' + usersPuestos.hora_desde.minutes;
+                const horaHasta = usersPuestos.hora_hasta.hours + ':' + usersPuestos.hora_hasta.minutes;
+                // update query to users_puestos
+                const updateUsersPuestosQuery = "UPDATE users_puestos SET hora_desde = $1, hora_hasta = $2, fecha_desde = $3, fecha_hasta = $4, lunes = $5, martes = $6, miercoles = $7, jueves =$8, viernes = $9, sabado = $10 WHERE id_user = $11";
+                const queryResultUsersPuestos = yield pool.query(updateUsersPuestosQuery, [horaDesde, horaHasta, usersPuestos.fecha_desde, usersPuestos.fecha_hasta,
+                    usersPuestos.dias[0], usersPuestos.dias[1], usersPuestos.dias[2],
+                    usersPuestos.dias[3], usersPuestos.dias[4], usersPuestos.dias[5]], usersPuestos.id_user);
+                console.log('users puestos updated');
+            }
+            const response = {
+                success: true,
+                body: {
+                    coworker,
+                    usersPuestos,
+                    selectedPlan
+                },
+            };
+            res.status(200).json(response);
+        }
+        catch (err) {
+            console.log(err);
+            const response = {
+                success: false,
+                error: err
+            };
+            res.status(400).json(response);
+        }
+    });
+}
+exports.updateCoworker = updateCoworker;
 //# sourceMappingURL=coworkers.controller.js.map
