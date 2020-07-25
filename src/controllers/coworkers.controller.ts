@@ -47,7 +47,7 @@ export async function getCoworkerById(req: any, res: any) {
     // Variables to be returned
     let coworker;
     let plan;
-    let group;
+    let groups: any[];
     let userPuesto;
 
     try {
@@ -58,6 +58,11 @@ export async function getCoworkerById(req: any, res: any) {
     } catch (err) {
         console.log('error querying coworker');
         console.log(err);
+        const resultError = {
+            success: false,
+            msg: err
+        }
+        res.status(400).json(resultError);
     }
 
     try {
@@ -68,18 +73,27 @@ export async function getCoworkerById(req: any, res: any) {
     } catch (err) {
         console.log('error querying plan');
         console.log(err);
+        const resultError = {
+            success: false,
+            msg: err
+        }
+        res.status(400).json(resultError);
     }
 
-    if (coworker.id_grupo) {
-        try {
-            // groups query
-            const query = 'SELECT id, id_lider, nombre, cuit_cuil FROM groups WHERE id = $1';
-            const coworkerQueryResult = await pool.query(query, [coworker.id_grupo]);
-            group = coworkerQueryResult.rows[0];
-        } catch (err) {
-            console.log('error querying groups');
-            console.log(err);
+
+    try {
+        // groups query
+        const query = 'SELECT id, id_lider, nombre, cuit_cuil FROM groups';
+        const coworkerQueryResult = await pool.query(query);
+        groups = coworkerQueryResult.rows;
+    } catch (err) {
+        console.log('error querying groups');
+        console.log(err);
+        const resultError = {
+            success: false,
+            msg: err
         }
+        res.status(400).json(resultError);
     }
 
     try {
@@ -90,14 +104,19 @@ export async function getCoworkerById(req: any, res: any) {
     } catch (err) {
         console.log('error querying userPuesto');
         console.log(err);
+        const resultError = {
+            success: false,
+            msg: err
+        }
+        res.status(400).json(resultError);
     }
 
     const result = {
         success: true,
         coworker,
         plan,
+        groups,
         userPuesto,
-        group
     }
     res.json(result);
 }
@@ -206,18 +225,27 @@ export async function updateCoworker(req: any, res: any) {
             console.log(coworker);
             const updateCoworkerQuery = "UPDATE users SET nombre = $2, apellido = $3, email = $4, id_grupo = $5, dni = $6, fecha_nacimiento = $7, direccion = $8, celular = $9, id_plan = $10 WHERE id = $1";
             const queryResult = await pool.query(updateCoworkerQuery, [coworker.id, coworker.nombre, coworker.apellido, coworker.email, coworker.id_grupo, coworker.dni, coworker.fecha_nacimiento, coworker.direccion, coworker.celular, coworker.id_plan]);
+
+            if (coworker.is_leader) {
+                const idLider = idCoworker;
+                const idGrupo = coworker.id_grupo;
+
+                // update query to groups (in case of group leader)
+                const updateIdLeader = "UPDATE groups SET id_lider=$1 WHERE id=$2";
+                const result = await pool.query(updateIdLeader, [idLider, idGrupo])
+            }
             console.log('coworker updated');
         }
 
         if (usersPuestos) {
             const horaDesde = usersPuestos.hora_desde.hours + ':' + usersPuestos.hora_desde.minutes;
             const horaHasta = usersPuestos.hora_hasta.hours + ':' + usersPuestos.hora_hasta.minutes;
-
             // update query to users_puestos
+            console.log(usersPuestos.dias);
             const updateUsersPuestosQuery = "UPDATE users_puestos SET hora_desde = $1, hora_hasta = $2, fecha_desde = $3, fecha_hasta = $4, lunes = $5, martes = $6, miercoles = $7, jueves =$8, viernes = $9, sabado = $10 WHERE id_user = $11";
             const queryResultUsersPuestos = await pool.query(updateUsersPuestosQuery, [horaDesde, horaHasta, usersPuestos.fecha_desde, usersPuestos.fecha_hasta,
                     usersPuestos.dias[0], usersPuestos.dias[1], usersPuestos.dias[2],
-                    usersPuestos.dias[3], usersPuestos.dias[4], usersPuestos.dias[5]], usersPuestos.id_user);
+                    usersPuestos.dias[3], usersPuestos.dias[4], usersPuestos.dias[5], usersPuestos.id_user]);
 
             console.log('users puestos updated');
         }
