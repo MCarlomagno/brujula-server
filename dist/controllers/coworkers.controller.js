@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateCoworker = exports.createCoworker = exports.getCoworkerById = exports.getCoworkersCount = exports.getCoworkers = void 0;
+exports.deleteCoworker = exports.updateCoworker = exports.createCoworker = exports.getCoworkerById = exports.getCoworkersCount = exports.getCoworkers = void 0;
 const pg_1 = require("pg");
 const pool = new pg_1.Pool({
     host: process.env.DBHOST || 'localhost',
@@ -262,4 +262,47 @@ function updateCoworker(req, res) {
     });
 }
 exports.updateCoworker = updateCoworker;
+function deleteCoworker(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const idUser = req.params.id;
+        try {
+            const selectGroupLeader = 'SELECT id FROM groups WHERE id_lider = $1';
+            const coworkerQueryResult = yield pool.query(selectGroupLeader, [idUser]);
+            const result = coworkerQueryResult.rows[0];
+            if (result) {
+                const responseError = {
+                    success: false,
+                    error: 'El coworker es lider de un grupo',
+                    body: {},
+                };
+                return res.status(401).json(responseError);
+            }
+            const deleteUsersPuestosQuery = 'DELETE FROM users_puestos WHERE id_user = $1';
+            const usersPuestosQueryResult = yield pool.query(deleteUsersPuestosQuery, [idUser]);
+            const selectPlanId = 'SELECT id_plan FROM users WHERE id = $1';
+            const selectPlanIdResult = yield pool.query(selectPlanId, [idUser]);
+            const plan = selectPlanIdResult.rows[0];
+            const deletePlanQuery = 'DELETE FROM plans WHERE id = $1 AND is_custom = true';
+            const deletePlanQueryResult = yield pool.query(deletePlanQuery, [plan.id]);
+            const deleteCoworkerQuery = 'DELETE FROM users WHERE id = $1';
+            const deleteCoworkerQueryResult = yield pool.query(deleteCoworkerQuery, [idUser]);
+            // TODO implement delete on reservas, users roles
+            const response = {
+                success: true,
+                error: '',
+                body: {},
+            };
+            return res.status(200).json(response);
+        }
+        catch (err) {
+            console.log(err);
+            const response = {
+                success: false,
+                error: err
+            };
+            res.status(400).json(response);
+        }
+    });
+}
+exports.deleteCoworker = deleteCoworker;
 //# sourceMappingURL=coworkers.controller.js.map

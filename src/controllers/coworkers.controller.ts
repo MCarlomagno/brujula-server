@@ -210,10 +210,10 @@ export async function updateCoworker(req: any, res: any) {
             const insertPlanQuery = "INSERT INTO plans (horas_sala, is_custom, nombre, descripcion) VALUES ($1, $2, $3, $4) RETURNING id;";
             const insertPlanQueryResult = await pool.query(insertPlanQuery, [selectedPlan.horas_sala, selectedPlan.is_custom, selectedPlan.nombre, selectedPlan.descripcion]);
             selectedPlan.id = insertPlanQueryResult.rows[0].id;
-            if(coworker) {
+            if (coworker) {
                 coworker.id_plan = insertPlanQueryResult.rows[0].id;
             } else {
-                const updateCoworkerAfterPlansQuery= "UPDATE users SET id_plan = $2 WHERE id = $1";
+                const updateCoworkerAfterPlansQuery = "UPDATE users SET id_plan = $2 WHERE id = $1";
                 const queryResult = await pool.query(updateCoworkerAfterPlansQuery, [idCoworker, selectedPlan.id]);
             }
             console.log('plan created');
@@ -244,8 +244,8 @@ export async function updateCoworker(req: any, res: any) {
             console.log(usersPuestos.dias);
             const updateUsersPuestosQuery = "UPDATE users_puestos SET hora_desde = $1, hora_hasta = $2, fecha_desde = $3, fecha_hasta = $4, lunes = $5, martes = $6, miercoles = $7, jueves =$8, viernes = $9, sabado = $10 WHERE id_user = $11";
             const queryResultUsersPuestos = await pool.query(updateUsersPuestosQuery, [horaDesde, horaHasta, usersPuestos.fecha_desde, usersPuestos.fecha_hasta,
-                    usersPuestos.dias[0], usersPuestos.dias[1], usersPuestos.dias[2],
-                    usersPuestos.dias[3], usersPuestos.dias[4], usersPuestos.dias[5], usersPuestos.id_user]);
+                usersPuestos.dias[0], usersPuestos.dias[1], usersPuestos.dias[2],
+                usersPuestos.dias[3], usersPuestos.dias[4], usersPuestos.dias[5], usersPuestos.id_user]);
 
             console.log('users puestos updated');
         }
@@ -259,6 +259,54 @@ export async function updateCoworker(req: any, res: any) {
             },
         }
         res.status(200).json(response);
+    } catch (err) {
+        console.log(err);
+        const response = {
+            success: false,
+            error: err
+        }
+        res.status(400).json(response);
+    }
+
+}
+
+export async function deleteCoworker(req: any, res: any) {
+    const idUser = req.params.id;
+    try {
+        const selectGroupLeader = 'SELECT id FROM groups WHERE id_lider = $1';
+        const coworkerQueryResult = await pool.query(selectGroupLeader, [idUser]);
+        const result = coworkerQueryResult.rows[0];
+        if (result) {
+            const responseError = {
+                success: false,
+                error: 'El coworker es lider de un grupo',
+                body: {},
+            }
+            return res.status(401).json(responseError);
+        }
+
+        const deleteUsersPuestosQuery = 'DELETE FROM users_puestos WHERE id_user = $1';
+        const usersPuestosQueryResult = await pool.query(deleteUsersPuestosQuery, [idUser]);
+
+        const selectPlanId = 'SELECT id_plan FROM users WHERE id = $1';
+        const selectPlanIdResult = await pool.query(selectPlanId, [idUser]);
+        const plan = selectPlanIdResult.rows[0];
+
+        const deletePlanQuery = 'DELETE FROM plans WHERE id = $1 AND is_custom = true';
+        const deletePlanQueryResult = await pool.query(deletePlanQuery, [plan.id]);
+
+        const deleteCoworkerQuery = 'DELETE FROM users WHERE id = $1';
+        const deleteCoworkerQueryResult = await pool.query(deleteCoworkerQuery, [idUser]);
+
+        // TODO implement delete on reservas, users roles
+
+        const response = {
+            success: true,
+            error: '',
+            body: {},
+        }
+        return res.status(200).json(response);
+
     } catch (err) {
         console.log(err);
         const response = {

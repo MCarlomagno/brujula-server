@@ -19,6 +19,7 @@ exports.router.get('/coworkers/count', coworkers_controller_1.getCoworkersCount)
 exports.router.get('/coworkers/getById/:id', coworkers_controller_1.getCoworkerById);
 exports.router.post('/coworkers', coworkers_controller_1.createCoworker);
 exports.router.put('/coworkers/:id', coworkers_controller_1.updateCoworker);
+exports.router.delete('/coworkers/:id', coworkers_controller_1.deleteCoworker);
 /// Groups
 exports.router.get('/groups', groups_controller_1.getGroups);
 //# sourceMappingURL=index.js.map
