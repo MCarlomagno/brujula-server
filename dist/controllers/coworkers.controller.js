@@ -203,11 +203,13 @@ function updateCoworker(req, res) {
         try {
             if (selectedPlan) {
                 // insert query to plans
-                const insertPlanQuery = "INSERT INTO plans (horas_sala, is_custom, nombre, descripcion) VALUES ($1, $2, $3, $4) RETURNING id;";
-                const insertPlanQueryResult = yield pool.query(insertPlanQuery, [selectedPlan.horas_sala, selectedPlan.is_custom, selectedPlan.nombre, selectedPlan.descripcion]);
-                selectedPlan.id = insertPlanQueryResult.rows[0].id;
+                if (selectedPlan.is_custom) {
+                    const insertPlanQuery = "INSERT INTO plans (horas_sala, is_custom, nombre, descripcion) VALUES ($1, $2, $3, $4) RETURNING id;";
+                    const insertPlanQueryResult = yield pool.query(insertPlanQuery, [selectedPlan.horas_sala, selectedPlan.is_custom, selectedPlan.nombre, selectedPlan.descripcion]);
+                    selectedPlan.id = insertPlanQueryResult.rows[0].id;
+                }
                 if (coworker) {
-                    coworker.id_plan = insertPlanQueryResult.rows[0].id;
+                    coworker.id_plan = selectedPlan.id;
                 }
                 else {
                     const updateCoworkerAfterPlansQuery = "UPDATE users SET id_plan = $2 WHERE id = $1";
@@ -217,16 +219,31 @@ function updateCoworker(req, res) {
             }
             // update query to users
             if (coworker) {
-                console.log('coworker');
-                console.log(coworker);
+                // gets id_grupo to check changes in groups
+                const idGrupo = coworker.id_grupo;
+                if (coworker.id_grupo === 0) {
+                    coworker.id_grupo = null;
+                }
                 const updateCoworkerQuery = "UPDATE users SET nombre = $2, apellido = $3, email = $4, id_grupo = $5, dni = $6, fecha_nacimiento = $7, direccion = $8, celular = $9, id_plan = $10 WHERE id = $1";
                 const queryResult = yield pool.query(updateCoworkerQuery, [coworker.id, coworker.nombre, coworker.apellido, coworker.email, coworker.id_grupo, coworker.dni, coworker.fecha_nacimiento, coworker.direccion, coworker.celular, coworker.id_plan]);
-                if (coworker.is_leader) {
-                    const idLider = idCoworker;
-                    const idGrupo = coworker.id_grupo;
-                    // update query to groups (in case of group leader)
-                    const updateIdLeader = "UPDATE groups SET id_lider=$1 WHERE id=$2";
-                    const result = yield pool.query(updateIdLeader, [idLider, idGrupo]);
+                // when idGrupo === 0 the user does not have group
+                if (idGrupo !== 0) {
+                    if (coworker.is_leader) {
+                        const idLider = idCoworker;
+                        // update query to groups (in case of group leader)
+                        const updateIdLeader = "UPDATE groups SET id_lider=$1 WHERE id=$2";
+                        const result = yield pool.query(updateIdLeader, [idLider, idGrupo]);
+                    }
+                    else {
+                        // if the user is leader and the role was changed, sets the group leader on null (no leader selected)
+                        const updateIdLeader = "UPDATE groups SET id_lider=NULL WHERE id_lider=$1";
+                        const resultUpdateIdLeader = yield pool.query(updateIdLeader, [idCoworker]);
+                    }
+                }
+                else {
+                    // if the user is leader and the role was changed, sets the group leader on null (no leader selected)
+                    const updateIdLeader = "UPDATE groups SET id_lider=NULL WHERE id_lider=$1";
+                    const resultUpdateIdLeader = yield pool.query(updateIdLeader, [idCoworker]);
                 }
                 console.log('coworker updated');
             }
