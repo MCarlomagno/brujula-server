@@ -106,6 +106,10 @@ CREATE TABLE users_puestos (
 
 -- ADD ID GROUP COLUMN 
 ALTER TABLE users ADD column id_grupo INTEGER;
+ALTER TABLE users 
+   ADD CONSTRAINT fk_id_grupo
+   FOREIGN KEY (id_grupo) 
+   REFERENCES groups(id);
 
 -- ADD disponible to puestos table
 ALTER TABLE puestos ADD COLUMN disponible BOOLEAN;
@@ -119,3 +123,6 @@ ALTER TABLE users ADD COLUMN created_at TIMESTAMP;
 
 -- ADD saturday to days
 ALTER TABLE users_puestos ADD COLUMN sabado BOOLEAN DEFAULT false;
+
+-- ADD created at value to groups
+ALTER TABLE groups ADD COLUMN created_at TIMESTAMP;

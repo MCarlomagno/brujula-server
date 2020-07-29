@@ -22,4 +22,10 @@ exports.router.put('/coworkers/:id', coworkers_controller_1.updateCoworker);
 exports.router.delete('/coworkers/:id', coworkers_controller_1.deleteCoworker);
 /// Groups
 exports.router.get('/groups', groups_controller_1.getGroups);
+exports.router.get('/groups/getAll', groups_controller_1.getAllGroups);
+exports.router.get('/groups/count', groups_controller_1.getGroupsCount);
+exports.router.get('/groups/getById/:id', groups_controller_1.getGroupById);
+exports.router.post('/groups', groups_controller_1.createGroup);
+exports.router.put('/groups/:id', groups_controller_1.editGroup);
+exports.router.delete('/groups/:id', groups_controller_1.deleteGroup);
 //# sourceMappingURL=index.js.map
