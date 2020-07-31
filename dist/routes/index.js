@@ -5,6 +5,7 @@ const express_1 = require("express");
 const users_controller_1 = require("../controllers/users.controller");
 const coworkers_controller_1 = require("../controllers/coworkers.controller");
 const groups_controller_1 = require("../controllers/groups.controller");
+const salas_controller_1 = require("../controllers/salas.controller");
 exports.router = express_1.Router();
 /// Users
 exports.router.get('/users', users_controller_1.getUsers);
@@ -28,4 +29,6 @@ exports.router.get('/groups/getById/:id', groups_controller_1.getGroupById);
 exports.router.post('/groups', groups_controller_1.createGroup);
 exports.router.put('/groups/:id', groups_controller_1.editGroup);
 exports.router.delete('/groups/:id', groups_controller_1.deleteGroup);
+/// Salas
+exports.router.get('/salas', salas_controller_1.getSalas);
 //# sourceMappingURL=index.js.map

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { getUsers, postUsers, getUserById, deleteUser, updateUser, loginUser } from '../controllers/users.controller';
 import { getCoworkers, createCoworker, getCoworkersCount, getCoworkerById, updateCoworker, deleteCoworker } from '../controllers/coworkers.controller';
 import { getGroups, getGroupsCount, createGroup, deleteGroup, getAllGroups, getGroupById, editGroup } from '../controllers/groups.controller';
+import { getSalas } from '../controllers/salas.controller';
 
 export const router = Router();
 
@@ -29,3 +30,6 @@ router.get('/groups/getById/:id', getGroupById)
 router.post('/groups', createGroup)
 router.put('/groups/:id', editGroup)
 router.delete('/groups/:id', deleteGroup)
+
+/// Salas
+router.get('/salas', getSalas)

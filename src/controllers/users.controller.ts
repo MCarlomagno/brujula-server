@@ -13,7 +13,6 @@ const pool = new Pool({
 
 export async function getUsers(req: any, res: any) {
     const queryResult = await pool.query('SELECT * FROM users');
-    console.log(queryResult.rows);
     res.json(queryResult.rows);
 }
 

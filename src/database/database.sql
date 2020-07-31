@@ -126,3 +126,21 @@ ALTER TABLE users_puestos ADD COLUMN sabado BOOLEAN DEFAULT false;
 
 -- ADD created at value to groups
 ALTER TABLE groups ADD COLUMN created_at TIMESTAMP;
+
+-- SALAS
+CREATE TABLE salas (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100)
+);
+
+-- RESERVAS
+CREATE TABLE reservas (
+    id SERIAL PRIMARY KEY,
+    id_user INTEGER,
+	id_sala INTEGER,
+	hora_desde TIME,
+	hora_hasta TIME,
+	fecha DATE,
+	FOREIGN KEY (id_user) REFERENCES users (id),
+	FOREIGN KEY (id_sala) REFERENCES salas (id)
+);
