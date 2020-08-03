@@ -23,7 +23,6 @@ const pool = new pg_1.Pool({
 function getUsers(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const queryResult = yield pool.query('SELECT * FROM users');
-        console.log(queryResult.rows);
         res.json(queryResult.rows);
     });
 }
