@@ -3,6 +3,7 @@ import { getUsers, postUsers, getUserById, deleteUser, updateUser, loginUser } f
 import { getCoworkers, createCoworker, getCoworkersCount, getCoworkerById, updateCoworker, deleteCoworker } from '../controllers/coworkers.controller';
 import { getGroups, getGroupsCount, createGroup, deleteGroup, getAllGroups, getGroupById, editGroup } from '../controllers/groups.controller';
 import { getSalas } from '../controllers/salas.controller';
+import { createReservation } from '../controllers/reservation.controller';
 
 export const router = Router();
 
@@ -33,3 +34,6 @@ router.delete('/groups/:id', deleteGroup)
 
 /// Salas
 router.get('/salas', getSalas)
+
+/// Reservation
+router.post('/reservation', createReservation)

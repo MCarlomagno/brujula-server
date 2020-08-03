@@ -6,6 +6,7 @@ const users_controller_1 = require("../controllers/users.controller");
 const coworkers_controller_1 = require("../controllers/coworkers.controller");
 const groups_controller_1 = require("../controllers/groups.controller");
 const salas_controller_1 = require("../controllers/salas.controller");
+const reservation_controller_1 = require("../controllers/reservation.controller");
 exports.router = express_1.Router();
 /// Users
 exports.router.get('/users', users_controller_1.getUsers);
@@ -31,4 +32,6 @@ exports.router.put('/groups/:id', groups_controller_1.editGroup);
 exports.router.delete('/groups/:id', groups_controller_1.deleteGroup);
 /// Salas
 exports.router.get('/salas', salas_controller_1.getSalas);
+/// Reservation
+exports.router.post('/reservation', reservation_controller_1.createReservation);
 //# sourceMappingURL=index.js.map
