@@ -34,4 +34,5 @@ exports.router.delete('/groups/:id', groups_controller_1.deleteGroup);
 exports.router.get('/salas', salas_controller_1.getSalas);
 /// Reservation
 exports.router.post('/reservation', reservation_controller_1.createReservation);
+exports.router.get('/reservation/byWeek', reservation_controller_1.getReservationByWeek);
 //# sourceMappingURL=index.js.map
