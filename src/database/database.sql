@@ -144,3 +144,6 @@ CREATE TABLE reservas (
 	FOREIGN KEY (id_user) REFERENCES users (id),
 	FOREIGN KEY (id_sala) REFERENCES salas (id)
 );
+
+-- changes the timezone of the db to Buenos Aires
+SET timezone=-3;
