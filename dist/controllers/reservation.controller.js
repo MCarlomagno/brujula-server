@@ -34,6 +34,7 @@ function createReservation(req, res) {
             res.status(200).json(response);
         }
         catch (err) {
+            console.log(err);
             const response = {
                 success: false,
                 data: '',
@@ -57,7 +58,7 @@ function getReservationByWeek(req, res) {
                 salas = salasQueryResult.rows;
                 idSala = salas[0].id;
             }
-            const query = `SELECT r.id as id, u.nombre || ' ' || u.apellido as title, r.fecha + r.hora_desde AS start at time zone 'UTC', r.fecha + r.hora_hasta AS end at time zone 'UTC'
+            const query = `SELECT r.id as id, u.nombre || ' ' || u.apellido as title, r.fecha + r.hora_desde AS start, r.fecha + r.hora_hasta AS end
         FROM reservas r INNER JOIN users u ON r.id_user = u.id
         WHERE r.id_sala = $1 AND r.fecha >= $2 AND r.fecha < $3;`;
             const queryResult = yield pool.query(query, [idSala, dateFrom, dateTo]);
@@ -72,6 +73,7 @@ function getReservationByWeek(req, res) {
             res.status(200).json(response);
         }
         catch (err) {
+            console.log(err);
             const response = {
                 success: false,
                 data: '',

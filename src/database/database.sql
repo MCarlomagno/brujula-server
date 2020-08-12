@@ -147,3 +147,6 @@ CREATE TABLE reservas (
 
 -- changes the timezone of the db to Buenos Aires
 SET timezone=-3;
+
+ALTER TABLE reservas ALTER COLUMN hora_desde TYPE TIME WITH TIME ZONE using '00:00';
+ALTER TABLE reservas ALTER COLUMN hora_hasta TYPE TIME WITH TIME ZONE using '00:00';
