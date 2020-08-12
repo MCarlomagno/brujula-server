@@ -26,6 +26,7 @@ export async function createReservation(req: any, res: any) {
 
         res.status(200).json(response);
     } catch (err) {
+        console.log(err);
         const response = {
             success: false,
             data: '',
@@ -70,6 +71,7 @@ export async function getReservationByWeek(req: any, res: any) {
 
         res.status(200).json(response);
     } catch (err) {
+        console.log(err);
         const response = {
             success: false,
             data: '',
