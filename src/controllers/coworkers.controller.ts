@@ -20,17 +20,47 @@ export async function getCoworkers(req: any, res: any) {
     const order = req.query.sortOrder;
     const filter = req.query.filter;
 
+    const group = req.query.group;
+    const bornDate = req.query.bornDate;
+    const plan = req.query.plan;
+
 
     // selects data for table loading
     // in the where, matches the filter value with nombre, apellido and email
     // LIMIT gets the items and number of page
-    const query = `SELECT u.id, u.nombre, u.apellido, u.email, p.horas_sala, u.horas_sala_consumidas
+    const query = `SELECT u.id, u.nombre, u.apellido, u.email, p.horas_sala, u.horas_sala_consumidas, u.fecha_nacimiento, u.id_plan, u.id_grupo
                     FROM users u INNER JOIN plans p ON u.id_plan = p.id
                     WHERE is_coworker = true AND (LOWER(u.nombre) LIKE '%' || LOWER($3) || '%' OR LOWER(u.apellido) LIKE '%' || LOWER($3) || '%' OR LOWER(u.email) LIKE '%' || LOWER($3) ||'%')
                     ORDER BY u.created_at DESC
                     LIMIT $1 OFFSET ($2::numeric * $1)`;
     const queryResult = await pool.query(query, [itemsPerPage, pageNumber, filter]);
-    res.json(queryResult.rows);
+
+    let resultRows = [...queryResult.rows];
+
+    // other filters
+    if(bornDate !== 'null') {
+        console.log("borndate");
+        console.log(bornDate);
+        resultRows = resultRows.filter((row) => {
+            const diaNacimiento = row.fecha_nacimiento.getDate();
+            const mesNacimiento = row.fecha_nacimiento.getMonth() + 1;
+            return (mesNacimiento.toString() === bornDate.split('-')[0] && diaNacimiento.toString() === bornDate.split('-')[1]);
+        } );
+    }
+
+    if(group !== 'null') {
+        console.log("group");
+        console.log(group);
+        resultRows = resultRows.filter((row) => row.id_grupo === group);
+    }
+
+    if(plan !== 'null') {
+        console.log("plan");
+        console.log(plan);
+        resultRows = resultRows.filter((row) => row.id_plan === plan);
+    }
+
+    res.json(resultRows);
 }
 
 export async function getCoworkersCount(req: any, res: any) {
