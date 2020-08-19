@@ -22,6 +22,7 @@ exports.router.get('/coworkers/getById/:id', coworkers_controller_1.getCoworkerB
 exports.router.post('/coworkers', coworkers_controller_1.createCoworker);
 exports.router.put('/coworkers/:id', coworkers_controller_1.updateCoworker);
 exports.router.delete('/coworkers/:id', coworkers_controller_1.deleteCoworker);
+exports.router.get('/coworkers/allPlanesAndGroups', coworkers_controller_1.getAllPlanesAndGropus);
 /// Groups
 exports.router.get('/groups', groups_controller_1.getGroups);
 exports.router.get('/groups/getAll', groups_controller_1.getAllGroups);

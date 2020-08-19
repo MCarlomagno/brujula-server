@@ -28,14 +28,21 @@ export async function getCoworkers(req: any, res: any) {
     // selects data for table loading
     // in the where, matches the filter value with nombre, apellido and email
     // LIMIT gets the items and number of page
-    const query = `SELECT u.id, u.nombre, u.apellido, u.email, p.horas_sala, u.horas_sala_consumidas, u.fecha_nacimiento, u.id_plan, u.id_grupo
+    const query = `SELECT u.id, u.nombre, u.apellido, u.email, p.horas_sala, u.horas_sala_consumidas, u.fecha_nacimiento, u.id_plan, u.id_grupo as id_grupo, p.is_custom as is_custom
                     FROM users u INNER JOIN plans p ON u.id_plan = p.id
                     WHERE is_coworker = true AND (LOWER(u.nombre) LIKE '%' || LOWER($3) || '%' OR LOWER(u.apellido) LIKE '%' || LOWER($3) || '%' OR LOWER(u.email) LIKE '%' || LOWER($3) ||'%')
                     ORDER BY u.created_at DESC
                     LIMIT $1 OFFSET ($2::numeric * $1)`;
     const queryResult = await pool.query(query, [itemsPerPage, pageNumber, filter]);
 
+    // Count
+    const countQuery = `SELECT COUNT(*) as coworkersCount
+                    FROM users u INNER JOIN plans p ON u.id_plan = p.id
+                    WHERE is_coworker = true AND (LOWER(u.nombre) LIKE '%' || LOWER($1) || '%' OR LOWER(u.apellido) LIKE '%' || LOWER($1) || '%' OR LOWER(u.email) LIKE '%' || LOWER($1) ||'%') `;
+    const countQueryResult = await pool.query(countQuery, [filter]);
+
     let resultRows = [...queryResult.rows];
+    const countResult = countQueryResult.rows[0].coworkerscount;
 
     // other filters
     if(bornDate !== 'null') {
@@ -50,17 +57,29 @@ export async function getCoworkers(req: any, res: any) {
 
     if(group !== 'null') {
         console.log("group");
-        console.log(group);
-        resultRows = resultRows.filter((row) => row.id_grupo === group);
+        const groupId = parseInt(group, 10);
+        console.log(groupId);
+        resultRows = resultRows.filter((row) => row.id_grupo === groupId);
     }
 
     if(plan !== 'null') {
         console.log("plan");
-        console.log(plan);
-        resultRows = resultRows.filter((row) => row.id_plan === plan);
+        const planId = parseInt(plan, 10);
+        console.log(planId);
+        // plan === 0  means that the user selected customized in the front
+        if(planId !== 0) {
+            resultRows = resultRows.filter((row) => row.id_plan === planId);
+        } else {
+            resultRows = resultRows.filter((row) => row.is_custom);
+        }
     }
 
-    res.json(resultRows);
+    const response = {
+        coworkers: resultRows,
+        coworkersCount: countResult
+    }
+
+    res.json(response);
 }
 
 export async function getCoworkersCount(req: any, res: any) {
@@ -357,6 +376,56 @@ export async function deleteCoworker(req: any, res: any) {
             body: {},
         }
         return res.status(200).json(response);
+
+    } catch (err) {
+        console.log(err);
+        const response = {
+            success: false,
+            error: err
+        }
+        res.status(400).json(response);
+    }
+}
+
+export async function getAllPlanesAndGropus(req: any, res: any) {
+    try {
+       let plans = [];
+       let groups = [];
+
+        try {
+            const selectPlans = 'SELECT id, horas_sala, is_custom, nombre, descripcion FROM plans WHERE is_custom = false';
+            const plansQueryResult = await pool.query(selectPlans);
+            plans = plansQueryResult.rows;
+        } catch(e) {
+            console.log('error searching plans');
+            console.log(e);
+            const responseError = {
+                success: false,
+                error: e
+            }
+            res.status(400).json(responseError);
+        }
+
+        try {
+            const selectGroups = 'SELECT id, id_lider, nombre, cuit_cuil FROM groups';
+            const groupsQueryResult = await pool.query(selectGroups);
+            groups = groupsQueryResult.rows;
+        } catch(e) {
+            console.log('error searching groups');
+            console.log(e);
+            const responseError = {
+                success: false,
+                error: e
+            }
+            res.status(400).json(responseError);
+        }
+
+        const response = {
+            success: true,
+            plans,
+            groups,
+        };
+        res.status(200).json(response);
 
     } catch (err) {
         console.log(err);
