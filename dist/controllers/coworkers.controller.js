@@ -26,60 +26,87 @@ function getCoworkers(req, res) {
         const pageNumber = req.query.pageNumber;
         const order = req.query.sortOrder;
         const filter = req.query.filter;
-        const group = req.query.group;
+        let group = req.query.group;
         const bornDate = req.query.bornDate;
-        const plan = req.query.plan;
-        // selects data for table loading
-        // in the where, matches the filter value with nombre, apellido and email
-        // LIMIT gets the items and number of page
-        const query = `SELECT u.id, u.nombre, u.apellido, u.email, p.horas_sala, u.horas_sala_consumidas, u.fecha_nacimiento, u.id_plan, u.id_grupo as id_grupo, p.is_custom as is_custom
-                    FROM users u INNER JOIN plans p ON u.id_plan = p.id
-                    WHERE is_coworker = true AND (LOWER(u.nombre) LIKE '%' || LOWER($3) || '%' OR LOWER(u.apellido) LIKE '%' || LOWER($3) || '%' OR LOWER(u.email) LIKE '%' || LOWER($3) ||'%')
-                    ORDER BY u.created_at DESC
-                    LIMIT $1 OFFSET ($2::numeric * $1)`;
-        const queryResult = yield pool.query(query, [itemsPerPage, pageNumber, filter]);
-        // Count
-        const countQuery = `SELECT COUNT(*) as coworkersCount
-                    FROM users u INNER JOIN plans p ON u.id_plan = p.id
-                    WHERE is_coworker = true AND (LOWER(u.nombre) LIKE '%' || LOWER($1) || '%' OR LOWER(u.apellido) LIKE '%' || LOWER($1) || '%' OR LOWER(u.email) LIKE '%' || LOWER($1) ||'%') `;
-        const countQueryResult = yield pool.query(countQuery, [filter]);
-        let resultRows = [...queryResult.rows];
-        const countResult = countQueryResult.rows[0].coworkerscount;
-        console.log(countResult);
-        // other filters
-        if (bornDate !== 'null') {
-            console.log("borndate");
-            console.log(bornDate);
-            resultRows = resultRows.filter((row) => {
-                const diaNacimiento = row.fecha_nacimiento.getDate();
-                const mesNacimiento = row.fecha_nacimiento.getMonth() + 1;
-                return (mesNacimiento.toString() === bornDate.split('-')[0] && diaNacimiento.toString() === bornDate.split('-')[1]);
-            });
-        }
-        if (group !== 'null') {
-            console.log("group");
-            const groupId = parseInt(group, 10);
-            console.log(groupId);
-            resultRows = resultRows.filter((row) => row.id_grupo === groupId);
-        }
-        if (plan !== 'null') {
-            console.log("plan");
-            const planId = parseInt(plan, 10);
-            console.log(planId);
-            // plan === 0  means that the user selected customized in the front
-            if (planId !== 0) {
-                resultRows = resultRows.filter((row) => row.id_plan === planId);
+        let plan = req.query.plan;
+        try {
+            // other filters
+            if (bornDate === 'null') {
+                // bornDate = new Date().toISOString();
             }
             else {
-                resultRows = resultRows.filter((row) => row.is_custom);
+                console.log("borndate");
+                console.log(bornDate);
+                // pass to datetime
             }
+            if (group === 'null') {
+                group = 0;
+            }
+            else {
+                console.log("group");
+                group = parseInt(group, 10);
+                console.log(group);
+            }
+            if (plan === 'null') {
+                plan = 0;
+            }
+            else {
+                console.log("plan");
+                plan = parseInt(plan, 10);
+                console.log(plan);
+                // plan === -1  means that the user selected customized in the front
+                if (plan === 0) {
+                    console.log('personalizado');
+                    plan = -1;
+                    // isCustomCondition
+                }
+            }
+            console.log('plan');
+            console.log(plan);
+            console.log('grupo');
+            console.log(group);
+            console.log('bornDate');
+            console.log(bornDate);
+            // selects data for table loading
+            // in the where, matches the filter value with nombre, apellido and email
+            // LIMIT gets the items and number of page
+            const query = `SELECT u.id, u.nombre, u.apellido, u.email, p.horas_sala, u.horas_sala_consumidas, u.fecha_nacimiento, u.id_plan, u.id_grupo as id_grupo, p.is_custom as is_custom
+                    FROM users u INNER JOIN plans p ON u.id_plan = p.id
+                    WHERE is_coworker = true
+                    AND (LOWER(u.nombre) LIKE '%' || LOWER($3) || '%' OR LOWER(u.apellido) LIKE '%' || LOWER($3) || '%' OR LOWER(u.email) LIKE '%' || LOWER($3) ||'%')
+                    AND ($4 = 0 OR u.id_plan = $4 OR ($4 = -1 AND p.is_custom))
+                    AND ($5 = 0 OR u.id_grupo = $5)
+                    AND ($6 LIKE 'null' OR DATE_PART('day', u.fecha_nacimiento) = DATE_PART('day',TO_TIMESTAMP($6, 'YYYY-MM-DD"T"HH24:MI:SS"Z"')) AND DATE_PART('month', u.fecha_nacimiento) = DATE_PART('month',TO_TIMESTAMP($6, 'YYYY-MM-DD"T"HH24:MI:SS"Z"')))
+                    ORDER BY u.created_at DESC
+                    LIMIT $1 OFFSET ($2::numeric * $1)`;
+            let queryResult;
+            queryResult = yield pool.query(query, [itemsPerPage, pageNumber, filter, plan, group, bornDate]);
+            // Count
+            const countQuery = `SELECT COUNT(*) as coworkersCount
+                    FROM users u INNER JOIN plans p ON u.id_plan = p.id
+                    WHERE is_coworker = true
+                    AND (LOWER(u.nombre) LIKE '%' || LOWER($1) || '%' OR LOWER(u.apellido) LIKE '%' || LOWER($1) || '%' OR LOWER(u.email) LIKE '%' || LOWER($1) ||'%')
+                    AND ($2 = 0 OR u.id_plan = $2 OR ($2 = -1 AND p.is_custom))
+                    AND ($3 = 0 OR u.id_grupo = $3)
+                    AND ($4 LIKE 'null' OR DATE_PART('day', u.fecha_nacimiento) = DATE_PART('day',TO_TIMESTAMP($4, 'YYYY-MM-DD"T"HH24:MI:SS"Z"')) AND DATE_PART('month', u.fecha_nacimiento) = DATE_PART('month',TO_TIMESTAMP($4, 'YYYY-MM-DD"T"HH24:MI:SS"Z"')))`;
+            let countQueryResult;
+            countQueryResult = yield pool.query(countQuery, [filter, plan, group, bornDate]);
+            const resultRows = [...queryResult.rows];
+            const countResult = countQueryResult.rows[0].coworkerscount;
+            const response = {
+                coworkers: resultRows,
+                coworkersCount: countResult
+            };
+            res.status(200).json(response);
         }
-        const response = {
-            coworkers: resultRows,
-            coworkersCount: countResult
-        };
-        console.log(response);
-        res.json(response);
+        catch (err) {
+            console.log(err);
+            const response = {
+                success: false,
+                error: err
+            };
+            res.status(400).json(response);
+        }
     });
 }
 exports.getCoworkers = getCoworkers;
@@ -327,19 +354,12 @@ function deleteCoworker(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const idUser = req.params.id;
         try {
-            const selectGroupLeader = 'SELECT id FROM groups WHERE id_lider = $1';
-            const coworkerQueryResult = yield pool.query(selectGroupLeader, [idUser]);
-            const result = coworkerQueryResult.rows[0];
-            if (result) {
-                const responseError = {
-                    success: false,
-                    error: 'El coworker es lider de un grupo',
-                    body: {},
-                };
-                return res.status(401).json(responseError);
-            }
+            const updateGroupLeader = 'UPDATE groups SET id_lider = NULL WHERE id_lider = $1';
+            const coworkerQueryResult = yield pool.query(updateGroupLeader, [idUser]);
             const deleteUsersPuestosQuery = 'DELETE FROM users_puestos WHERE id_user = $1';
             const usersPuestosQueryResult = yield pool.query(deleteUsersPuestosQuery, [idUser]);
+            const deleteReservasQuery = 'DELETE FROM reservas WHERE id_user = $1';
+            const reservasQueryResult = yield pool.query(deleteReservasQuery, [idUser]);
             const selectPlanId = 'SELECT id_plan FROM users WHERE id = $1';
             const selectPlanIdResult = yield pool.query(selectPlanId, [idUser]);
             const plan = selectPlanIdResult.rows[0];
