@@ -4,6 +4,7 @@ import { getCoworkers, createCoworker, getCoworkersCount, getCoworkerById, updat
 import { getGroups, getGroupsCount, createGroup, deleteGroup, getAllGroups, getGroupById, editGroup } from '../controllers/groups.controller';
 import { getSalas } from '../controllers/salas.controller';
 import { createReservation, getReservationByWeek } from '../controllers/reservation.controller';
+import { getOficinas } from '../controllers/oficinas.controller';
 
 export const router = Router();
 
@@ -39,3 +40,6 @@ router.get('/salas', getSalas)
 /// Reservation
 router.post('/reservation', createReservation)
 router.get('/reservation/byWeek', getReservationByWeek)
+
+/// Oficinas
+router.get('/oficinas', getOficinas)
