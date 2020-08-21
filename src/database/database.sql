@@ -150,3 +150,14 @@ SET timezone=-3;
 
 ALTER TABLE reservas ALTER COLUMN hora_desde TYPE TIME WITH TIME ZONE using '00:00';
 ALTER TABLE reservas ALTER COLUMN hora_hasta TYPE TIME WITH TIME ZONE using '00:00';
+
+CREATE TABLE oficinas (
+    id SERIAL PRIMARY KEY,
+	nombre VARCHAR(50)
+)
+
+ALTER TABLE groups ADD COLUMN id_oficina INTEGER;
+ALTER TABLE groups 
+   ADD CONSTRAINT fk_id_oficina
+   FOREIGN KEY (id_oficina) 
+   REFERENCES oficinas(id);

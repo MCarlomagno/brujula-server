@@ -28,7 +28,7 @@ function getGroups(req, res) {
         const filter = req.query.filter;
         // selects data for table loading
         // LIMIT gets the items and number of page
-        const query = `SELECT id, nombre, id_lider, cuit_cuil
+        const query = `SELECT id, nombre, id_lider, cuit_cuil, id_oficina
                     FROM groups
                     WHERE LOWER(nombre) LIKE '%' || LOWER($3) || '%'
                     ORDER BY created_at DESC
@@ -40,7 +40,7 @@ function getGroups(req, res) {
 exports.getGroups = getGroups;
 function getAllGroups(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        const query = `SELECT id, nombre, id_lider, cuit_cuil
+        const query = `SELECT id, nombre, id_lider, cuit_cuil, id_oficina
                     FROM groups`;
         const queryResult = yield pool.query(query);
         res.json(queryResult.rows);
@@ -60,8 +60,8 @@ function createGroup(req, res) {
         const group = req.body.group;
         try {
             // insert query to users
-            const insertCoworkerQuery = "INSERT INTO groups (nombre, cuit_cuil, id_lider, created_at) VALUES ($1, $2, NULL, CURRENT_TIMESTAMP) RETURNING id;";
-            const queryResult = yield pool.query(insertCoworkerQuery, [group.nombre, group.cuit_cuil]);
+            const insertCoworkerQuery = "INSERT INTO groups (nombre, cuit_cuil, id_oficina, id_lider, created_at) VALUES ($1, $2, $3, NULL, CURRENT_TIMESTAMP) RETURNING id;";
+            const queryResult = yield pool.query(insertCoworkerQuery, [group.nombre, group.cuit_cuil, group.id_oficina]);
             group.id = queryResult.rows[0].id;
             const response = {
                 success: true,
@@ -89,8 +89,8 @@ function editGroup(req, res) {
         const idGroup = req.params.id;
         try {
             // insert query to users
-            const insertCoworkerQuery = "UPDATE groups SET nombre = $1, cuit_cuil=$2 WHERE id=$3";
-            const queryResult = yield pool.query(insertCoworkerQuery, [group.nombre, group.cuit_cuil, idGroup]);
+            const insertCoworkerQuery = "UPDATE groups SET nombre = $1, cuit_cuil=$2, id_oficina=$3 WHERE id=$4";
+            const queryResult = yield pool.query(insertCoworkerQuery, [group.nombre, group.cuit_cuil, group.id_oficina, idGroup]);
             const response = {
                 success: true,
                 body: {
@@ -148,7 +148,7 @@ exports.deleteGroup = deleteGroup;
 function getGroupById(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const idGrupo = req.params.id;
-        const query = 'SELECT id, nombre, cuit_cuil FROM groups WHERE id = $1';
+        const query = 'SELECT id, nombre, cuit_cuil, id_oficina FROM groups WHERE id = $1';
         const queryResult = yield pool.query(query, [idGrupo]);
         res.json(queryResult.rows[0]);
     });

@@ -7,6 +7,7 @@ const coworkers_controller_1 = require("../controllers/coworkers.controller");
 const groups_controller_1 = require("../controllers/groups.controller");
 const salas_controller_1 = require("../controllers/salas.controller");
 const reservation_controller_1 = require("../controllers/reservation.controller");
+const oficinas_controller_1 = require("../controllers/oficinas.controller");
 exports.router = express_1.Router();
 /// Users
 exports.router.get('/users', users_controller_1.getUsers);
@@ -36,4 +37,6 @@ exports.router.get('/salas', salas_controller_1.getSalas);
 /// Reservation
 exports.router.post('/reservation', reservation_controller_1.createReservation);
 exports.router.get('/reservation/byWeek', reservation_controller_1.getReservationByWeek);
+/// Oficinas
+exports.router.get('/oficinas', oficinas_controller_1.getOficinas);
 //# sourceMappingURL=index.js.map
