@@ -30,43 +30,22 @@ function getCoworkers(req, res) {
         const bornDate = req.query.bornDate;
         let plan = req.query.plan;
         try {
-            // other filters
-            if (bornDate === 'null') {
-                // bornDate = new Date().toISOString();
-            }
-            else {
-                console.log("borndate");
-                console.log(bornDate);
-                // pass to datetime
-            }
             if (group === 'null') {
                 group = 0;
             }
             else {
-                console.log("group");
                 group = parseInt(group, 10);
-                console.log(group);
             }
             if (plan === 'null') {
                 plan = 0;
             }
             else {
-                console.log("plan");
                 plan = parseInt(plan, 10);
-                console.log(plan);
                 // plan === -1  means that the user selected customized in the front
                 if (plan === 0) {
-                    console.log('personalizado');
                     plan = -1;
-                    // isCustomCondition
                 }
             }
-            console.log('plan');
-            console.log(plan);
-            console.log('grupo');
-            console.log(group);
-            console.log('bornDate');
-            console.log(bornDate);
             // selects data for table loading
             // in the where, matches the filter value with nombre, apellido and email
             // LIMIT gets the items and number of page
