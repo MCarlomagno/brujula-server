@@ -22,10 +22,10 @@ export async function getGroups(req: any, res: any) {
 
     // selects data for table loading
     // LIMIT gets the items and number of page
-    const query = `SELECT id, nombre, id_lider, cuit_cuil, id_oficina
-                    FROM groups
-                    WHERE LOWER(nombre) LIKE '%' || LOWER($3) || '%'
-                    ORDER BY created_at DESC
+    const query = `SELECT g.id, g.nombre, g.id_lider, g.cuit_cuil, g.id_oficina, o.nombre as nombre_oficina
+                    FROM groups g LEFT JOIN oficinas o ON g.id_oficina = o.id
+                    WHERE LOWER(g.nombre) LIKE '%' || LOWER($3) || '%'
+                    ORDER BY g.created_at DESC
                     LIMIT $1 OFFSET ($2::numeric * $1)`;
     const queryResult = await pool.query(query, [itemsPerPage, pageNumber, filter]);
     res.json(queryResult.rows);
