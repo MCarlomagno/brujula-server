@@ -161,3 +161,6 @@ ALTER TABLE groups
    ADD CONSTRAINT fk_id_oficina
    FOREIGN KEY (id_oficina) 
    REFERENCES oficinas(id);
+
+
+ALTER TABLE puestos ADD COLUMN numero INTEGER

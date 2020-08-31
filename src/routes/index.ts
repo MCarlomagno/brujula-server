@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { getUsers, postUsers, getUserById, deleteUser, updateUser, loginUser } from '../controllers/users.controller';
-import { getCoworkers, createCoworker, getCoworkersCount, getCoworkerById, updateCoworker, deleteCoworker, getAllPlanesAndGropus } from '../controllers/coworkers.controller';
+import { getCoworkers, createCoworker, getCoworkersCount, getCoworkerById, updateCoworker, deleteCoworker, getAllPlanesAndGropus, getAllGroupsAndPuestos } from '../controllers/coworkers.controller';
 import { getGroups, getGroupsCount, createGroup, deleteGroup, getAllGroups, getGroupById, editGroup } from '../controllers/groups.controller';
 import { getSalas } from '../controllers/salas.controller';
 import { createReservation, getReservationByWeek } from '../controllers/reservation.controller';
@@ -24,6 +24,7 @@ router.post('/coworkers', createCoworker)
 router.put('/coworkers/:id', updateCoworker)
 router.delete('/coworkers/:id', deleteCoworker)
 router.get('/coworkers/allPlanesAndGroups', getAllPlanesAndGropus)
+router.get('/corowkers/allGroupsAndPuestos', getAllGroupsAndPuestos)
 
 /// Groups
 router.get('/groups', getGroups)
