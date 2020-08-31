@@ -110,6 +110,7 @@ export async function getCoworkerById(req: any, res: any) {
     let coworker;
     let plan;
     let groups: any[];
+    let puestos: any[];
     let userPuesto;
 
     try {
@@ -173,12 +174,28 @@ export async function getCoworkerById(req: any, res: any) {
         res.status(400).json(resultError);
     }
 
+    try {
+        // users_puestos query
+        const puestosQuery = 'SELECT id, numero, nombre FROM puestos WHERE disponible = true';
+        const puestosQueryResult = await pool.query(puestosQuery);
+        puestos = puestosQueryResult.rows;
+    } catch (err) {
+        console.log('error querying userPuesto');
+        console.log(err);
+        const resultError = {
+            success: false,
+            msg: err
+        }
+        res.status(400).json(resultError);
+    }
+
     const result = {
         success: true,
         coworker,
         plan,
         groups,
         userPuesto,
+        puestos
     }
     res.json(result);
 }
@@ -218,11 +235,21 @@ export async function createCoworker(req: any, res: any) {
         }
 
         if (coworker.id_plan !== 4) {
-            // select from puestos to set a free one to the user
-            const puestosQuery = 'SELECT id FROM puestos WHERE disponible = true';
-            const puestosQueryResult = await pool.query(puestosQuery);
 
-            const idPuesto = puestosQueryResult.rows[0].id;
+            let idPuesto;
+
+            // if the admin didnt select puesto
+            if (!usersPuestos.id_puesto) {
+
+                // select from puestos to set a free one to the user
+                const puestosQuery = 'SELECT id FROM puestos WHERE disponible = true';
+                const puestosQueryResult = await pool.query(puestosQuery);
+                idPuesto = puestosQueryResult.rows[0].id;
+
+            } else {
+                idPuesto = usersPuestos.id_puesto;
+            }
+
             const idUser = queryResult.rows[0].id;
             const horaDesde = usersPuestos.hora_desde ? usersPuestos.hora_desde.hours + ':' + usersPuestos.hora_desde.minutes : null;
             const horaHasta = usersPuestos.hora_hasta ? usersPuestos.hora_hasta.hours + ':' + usersPuestos.hora_hasta.minutes : null;
@@ -321,8 +348,8 @@ export async function updateCoworker(req: any, res: any) {
         }
 
         if (usersPuestos) {
-            const horaDesde = usersPuestos.hora_desde.hours + ':' + usersPuestos.hora_desde.minutes;
-            const horaHasta = usersPuestos.hora_hasta.hours + ':' + usersPuestos.hora_hasta.minutes;
+            const horaDesde = usersPuestos.hora_desde ? usersPuestos.hora_desde.hours + ':' + usersPuestos.hora_desde.minutes : null;
+            const horaHasta = usersPuestos.hora_hasta? usersPuestos.hora_hasta.hours + ':' + usersPuestos.hora_hasta.minutes : null;
             // update query to users_puestos
             console.log(usersPuestos.dias);
             const updateUsersPuestosQuery = "UPDATE users_puestos SET hora_desde = $1, hora_hasta = $2, fecha_desde = $3, fecha_hasta = $4, lunes = $5, martes = $6, miercoles = $7, jueves =$8, viernes = $9, sabado = $10 WHERE id_user = $11";
@@ -443,3 +470,37 @@ export async function getAllPlanesAndGropus(req: any, res: any) {
         res.status(400).json(response);
     }
 }
+
+
+export async function getAllGroupsAndPuestos(req: any, res: any) {
+    try {
+        let groups = [];
+        let puestos = [];
+
+        const groupsQuery = `SELECT id, nombre, id_lider, cuit_cuil, id_oficina
+        FROM groups`;
+        const groupsQueryResult = await pool.query(groupsQuery);
+        groups = groupsQueryResult.rows;
+
+        const puestosQuery = `SELECT id, nombre, numero
+        FROM puestos`;
+        const puestosQueryResult = await pool.query(puestosQuery);
+        puestos = puestosQueryResult.rows;
+
+        const response = {
+            success: true,
+            puestos,
+            groups
+        }
+
+        res.status(200).json(response);
+    } catch (err) {
+        console.log(err);
+        const response = {
+            success: false,
+            error: err
+        }
+        res.status(400).json(response);
+    }
+}
+
