@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import e from 'express';
+import  * as nodemailer  from 'nodemailer';
 
 
 const pool = new Pool({
@@ -263,7 +263,27 @@ export async function createCoworker(req: any, res: any) {
                     usersPuestos.dias[3], usersPuestos.dias[4], usersPuestos.dias[5]]);
         }
 
+        // Generate test SMTP service account from ethereal.email
+        // Only needed if you don't have a real mail account for testing
+        const testAccount = await nodemailer.createTestAccount();
 
+        // create reusable transporter object using the default SMTP transport
+        const transporter = nodemailer.createTransport({
+            // service: 'gmail',
+            auth: {
+              user: process.env.SMTP_EMAIL,
+              pass: process.env.SMTP_PASS
+            }
+        });
+
+        // send mail with defined transport object
+        const info = await transporter.sendMail({
+            from: '"Juli de Brújula"', // sender address
+            to: "marcoscarlomagno1@gmail.com", // list of receivers
+            subject: "Bienvenidx a Brújula", // Subject line
+            html: `<b>Bienvenidx, tu email/user: ${coworker.email} tu nueva contraseña: ${pass}</b>`, // html body
+            text: 'test'
+        });
 
         const response = {
             success: true,
@@ -349,11 +369,11 @@ export async function updateCoworker(req: any, res: any) {
 
         if (usersPuestos) {
             const horaDesde = usersPuestos.hora_desde ? usersPuestos.hora_desde.hours + ':' + usersPuestos.hora_desde.minutes : null;
-            const horaHasta = usersPuestos.hora_hasta? usersPuestos.hora_hasta.hours + ':' + usersPuestos.hora_hasta.minutes : null;
+            const horaHasta = usersPuestos.hora_hasta ? usersPuestos.hora_hasta.hours + ':' + usersPuestos.hora_hasta.minutes : null;
             // update query to users_puestos
             console.log(usersPuestos.dias);
-            const updateUsersPuestosQuery = "UPDATE users_puestos SET hora_desde = $1, hora_hasta = $2, fecha_desde = $3, fecha_hasta = $4, lunes = $5, martes = $6, miercoles = $7, jueves =$8, viernes = $9, sabado = $10 WHERE id_user = $11";
-            const queryResultUsersPuestos = await pool.query(updateUsersPuestosQuery, [horaDesde, horaHasta, usersPuestos.fecha_desde, usersPuestos.fecha_hasta,
+            const updateUsersPuestosQuery = "UPDATE users_puestos SET hora_desde = $1, hora_hasta = $2, fecha_desde = $3, fecha_hasta = $4, id_puesto=$5, lunes = $6, martes = $7, miercoles = $8, jueves =$9, viernes = $10, sabado = $11 WHERE id_user = $12";
+            const queryResultUsersPuestos = await pool.query(updateUsersPuestosQuery, [horaDesde, horaHasta, usersPuestos.fecha_desde, usersPuestos.fecha_hasta, usersPuestos.id_puesto,
                 usersPuestos.dias[0], usersPuestos.dias[1], usersPuestos.dias[2],
                 usersPuestos.dias[3], usersPuestos.dias[4], usersPuestos.dias[5], usersPuestos.id_user]);
 
