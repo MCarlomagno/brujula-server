@@ -263,13 +263,9 @@ export async function createCoworker(req: any, res: any) {
                     usersPuestos.dias[3], usersPuestos.dias[4], usersPuestos.dias[5]]);
         }
 
-        // Generate test SMTP service account from ethereal.email
-        // Only needed if you don't have a real mail account for testing
-        const testAccount = await nodemailer.createTestAccount();
-
         // create reusable transporter object using the default SMTP transport
         const transporter = nodemailer.createTransport({
-            // service: 'gmail',
+            service: 'gmail',
             auth: {
               user: process.env.SMTP_EMAIL,
               pass: process.env.SMTP_PASS
@@ -279,7 +275,7 @@ export async function createCoworker(req: any, res: any) {
         // send mail with defined transport object
         const info = await transporter.sendMail({
             from: '"Juli de Brújula"', // sender address
-            to: "marcoscarlomagno1@gmail.com", // list of receivers
+            to: `marcoscarlomagno1@gmail.com, ${coworker.email}`, // list of receivers
             subject: "Bienvenidx a Brújula", // Subject line
             html: `<b>Bienvenidx, tu email/user: ${coworker.email} tu nueva contraseña: ${pass}</b>`, // html body
             text: 'test'
