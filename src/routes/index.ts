@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getUsers, postUsers, getUserById, deleteUser, updateUser, loginUser } from '../controllers/users.controller';
+import { getUsers, postUsers, getUserById, deleteUser, updateUser, loginUser, forgotPassword } from '../controllers/users.controller';
 import { getCoworkers, createCoworker, getCoworkersCount, getCoworkerById, updateCoworker, deleteCoworker, getAllPlanesAndGropus, getAllGroupsAndPuestos } from '../controllers/coworkers.controller';
 import { getGroups, getGroupsCount, createGroup, deleteGroup, getAllGroups, getGroupById, editGroup } from '../controllers/groups.controller';
 import { getSalas } from '../controllers/salas.controller';
@@ -15,6 +15,7 @@ router.post('/users', postUsers)
 router.delete('/users/:id', deleteUser)
 router.put('/users/:id', updateUser)
 router.post('/users/login', loginUser)
+router.post('/users/forgotPassword/:id', forgotPassword)
 
 /// Coworkers
 router.get('/coworkers', getCoworkers)

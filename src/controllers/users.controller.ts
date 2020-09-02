@@ -1,5 +1,6 @@
 import { Pool } from 'pg';
 import { sign } from 'jsonwebtoken';
+import * as nodemailer from 'nodemailer';
 
 
 const pool = new Pool({
@@ -52,14 +53,58 @@ export async function loginUser(req: any, res: any) {
     const queryResultUser = await pool.query("SELECT id, nombre, email, password FROM users WHERE email = $1", [email]);
     // TODO: validate
     console.log('after query rows cournt: ' + queryResultUser.rowCount);
-    if(queryResultUser.rowCount === 0) {
-        return res.status(401).json({message: "El usuario no existe"});
+    if (queryResultUser.rowCount === 0) {
+        return res.status(401).json({ message: "El usuario no existe" });
     }
     const userId = queryResultUser.rows[0].id;
     const queryResultPassword = await pool.query("SELECT id FROM users WHERE password = crypt($1, password) AND id = $2;", [password, userId]);
-    if(queryResultPassword.rowCount === 0) {
-        return res.status(401).json({message: "Contrasena incorrecta"});
+    if (queryResultPassword.rowCount === 0) {
+        return res.status(401).json({ message: "Contrasena incorrecta" });
     }
-    const token = sign({id: userId}, process.env.SECRETKEY);
-    res.status(200).json({message: "welcome", token, data: req.body})
+    const token = sign({ id: userId }, process.env.SECRETKEY);
+    res.status(200).json({ message: "welcome", token, data: req.body })
 }
+
+export async function forgotPassword(req: any, res: any) {
+    const id = req.params.id;
+    try {
+        // creating random password for new user
+        const pass = Math.random().toString(36).slice(-8);
+
+        // insert query to users
+        const updatePasswordQuery = "UPDATE users SET password = crypt($1, gen_salt('bf')) WHERE id = $2 RETURNING email;";
+        const queryResult = await pool.query(updatePasswordQuery, [pass, id]);
+        const email = queryResult.rows[0].email;
+
+
+        // create reusable transporter object using the default SMTP transport
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.SMTP_EMAIL,
+                pass: process.env.SMTP_PASS
+            }
+        });
+
+        // send mail with defined transport object
+        const info = await transporter.sendMail({
+            from: '"Juli de Brújula"', // sender address
+            to: `marcoscarlomagno1@gmail.com, ${email}`, // list of receivers
+            subject: "Bienvenidx a Brújula", // Subject line
+            html: `<b>Hola! tu email/user es: ${email} y tu nueva contraseña: ${pass}</b>`, // html body
+            text: 'test'
+        });
+        const response = {
+            success: true,
+        }
+        res.status(200).json(response);
+    } catch (err) {
+        console.log(err);
+        const response = {
+            success: false,
+            error: err
+        }
+        res.status(400).json(response);
+    }
+}
+
