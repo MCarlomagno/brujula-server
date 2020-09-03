@@ -15,7 +15,7 @@ router.post('/users', postUsers)
 router.delete('/users/:id', deleteUser)
 router.put('/users/:id', updateUser)
 router.post('/users/login', loginUser)
-router.post('/users/forgotPassword/:id', forgotPassword)
+router.post('/users/forgotPassword/:email', forgotPassword)
 
 /// Coworkers
 router.get('/coworkers', getCoworkers)

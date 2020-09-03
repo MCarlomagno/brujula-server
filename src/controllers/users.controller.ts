@@ -66,15 +66,21 @@ export async function loginUser(req: any, res: any) {
 }
 
 export async function forgotPassword(req: any, res: any) {
-    const id = req.params.id;
+    const email = req.params.email;
     try {
         // creating random password for new user
         const pass = Math.random().toString(36).slice(-8);
 
+        console.log(email);
+
+        const queryResultUser = await pool.query("SELECT id, nombre, email, password FROM users WHERE email = $1", [email]);
+        if (queryResultUser.rowCount === 0) {
+            return res.status(401).json({ message: "El usuario no existe" });
+        }
+
         // insert query to users
-        const updatePasswordQuery = "UPDATE users SET password = crypt($1, gen_salt('bf')) WHERE id = $2 RETURNING email;";
-        const queryResult = await pool.query(updatePasswordQuery, [pass, id]);
-        const email = queryResult.rows[0].email;
+        const updatePasswordQuery = "UPDATE users SET password = crypt($1, gen_salt('bf')) WHERE email = $2";
+        const queryResult = await pool.query(updatePasswordQuery, [pass, email]);
 
 
         // create reusable transporter object using the default SMTP transport

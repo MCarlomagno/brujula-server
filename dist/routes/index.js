@@ -16,6 +16,7 @@ exports.router.post('/users', users_controller_1.postUsers);
 exports.router.delete('/users/:id', users_controller_1.deleteUser);
 exports.router.put('/users/:id', users_controller_1.updateUser);
 exports.router.post('/users/login', users_controller_1.loginUser);
+exports.router.post('/users/forgotPassword/:email', users_controller_1.forgotPassword);
 /// Coworkers
 exports.router.get('/coworkers', coworkers_controller_1.getCoworkers);
 exports.router.get('/coworkers/count', coworkers_controller_1.getCoworkersCount);
@@ -24,6 +25,7 @@ exports.router.post('/coworkers', coworkers_controller_1.createCoworker);
 exports.router.put('/coworkers/:id', coworkers_controller_1.updateCoworker);
 exports.router.delete('/coworkers/:id', coworkers_controller_1.deleteCoworker);
 exports.router.get('/coworkers/allPlanesAndGroups', coworkers_controller_1.getAllPlanesAndGropus);
+exports.router.get('/corowkers/allGroupsAndPuestos', coworkers_controller_1.getAllGroupsAndPuestos);
 /// Groups
 exports.router.get('/groups', groups_controller_1.getGroups);
 exports.router.get('/groups/getAll', groups_controller_1.getAllGroups);

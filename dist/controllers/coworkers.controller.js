@@ -1,4 +1,23 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -9,8 +28,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllPlanesAndGropus = exports.deleteCoworker = exports.updateCoworker = exports.createCoworker = exports.getCoworkerById = exports.getCoworkersCount = exports.getCoworkers = void 0;
+exports.getAllGroupsAndPuestos = exports.getAllPlanesAndGropus = exports.deleteCoworker = exports.updateCoworker = exports.createCoworker = exports.getCoworkerById = exports.getCoworkersCount = exports.getCoworkers = void 0;
 const pg_1 = require("pg");
+const nodemailer = __importStar(require("nodemailer"));
 const pool = new pg_1.Pool({
     host: process.env.DBHOST || 'localhost',
     port: 5432,
@@ -105,6 +125,7 @@ function getCoworkerById(req, res) {
         let coworker;
         let plan;
         let groups;
+        let puestos;
         let userPuesto;
         try {
             // users query
@@ -166,12 +187,28 @@ function getCoworkerById(req, res) {
             };
             res.status(400).json(resultError);
         }
+        try {
+            // users_puestos query
+            const puestosQuery = 'SELECT id, numero, nombre FROM puestos WHERE disponible = true';
+            const puestosQueryResult = yield pool.query(puestosQuery);
+            puestos = puestosQueryResult.rows;
+        }
+        catch (err) {
+            console.log('error querying userPuesto');
+            console.log(err);
+            const resultError = {
+                success: false,
+                msg: err
+            };
+            res.status(400).json(resultError);
+        }
         const result = {
             success: true,
             coworker,
             plan,
             groups,
             userPuesto,
+            puestos
         };
         res.json(result);
     });
@@ -207,10 +244,17 @@ function createCoworker(req, res) {
                 const result = yield pool.query(updateIdLeader, [idLider, idGrupo]);
             }
             if (coworker.id_plan !== 4) {
-                // select from puestos to set a free one to the user
-                const puestosQuery = 'SELECT id FROM puestos WHERE disponible = true';
-                const puestosQueryResult = yield pool.query(puestosQuery);
-                const idPuesto = puestosQueryResult.rows[0].id;
+                let idPuesto;
+                // if the admin didnt select puesto
+                if (!usersPuestos.id_puesto) {
+                    // select from puestos to set a free one to the user
+                    const puestosQuery = 'SELECT id FROM puestos WHERE disponible = true';
+                    const puestosQueryResult = yield pool.query(puestosQuery);
+                    idPuesto = puestosQueryResult.rows[0].id;
+                }
+                else {
+                    idPuesto = usersPuestos.id_puesto;
+                }
                 const idUser = queryResult.rows[0].id;
                 const horaDesde = usersPuestos.hora_desde ? usersPuestos.hora_desde.hours + ':' + usersPuestos.hora_desde.minutes : null;
                 const horaHasta = usersPuestos.hora_hasta ? usersPuestos.hora_hasta.hours + ':' + usersPuestos.hora_hasta.minutes : null;
@@ -221,6 +265,22 @@ function createCoworker(req, res) {
                     usersPuestos.dias[0], usersPuestos.dias[1], usersPuestos.dias[2],
                     usersPuestos.dias[3], usersPuestos.dias[4], usersPuestos.dias[5]]);
             }
+            // create reusable transporter object using the default SMTP transport
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: process.env.SMTP_EMAIL,
+                    pass: process.env.SMTP_PASS
+                }
+            });
+            // send mail with defined transport object
+            const info = yield transporter.sendMail({
+                from: '"Juli de Brújula"',
+                to: `marcoscarlomagno1@gmail.com, ${coworker.email}`,
+                subject: "Bienvenidx a Brújula",
+                html: `<b>Bienvenidx, tu email/user: ${coworker.email} tu nueva contraseña: ${pass}</b>`,
+                text: 'test'
+            });
             const response = {
                 success: true,
                 body: {
@@ -298,12 +358,12 @@ function updateCoworker(req, res) {
                 console.log('coworker updated');
             }
             if (usersPuestos) {
-                const horaDesde = usersPuestos.hora_desde.hours + ':' + usersPuestos.hora_desde.minutes;
-                const horaHasta = usersPuestos.hora_hasta.hours + ':' + usersPuestos.hora_hasta.minutes;
+                const horaDesde = usersPuestos.hora_desde ? usersPuestos.hora_desde.hours + ':' + usersPuestos.hora_desde.minutes : null;
+                const horaHasta = usersPuestos.hora_hasta ? usersPuestos.hora_hasta.hours + ':' + usersPuestos.hora_hasta.minutes : null;
                 // update query to users_puestos
                 console.log(usersPuestos.dias);
-                const updateUsersPuestosQuery = "UPDATE users_puestos SET hora_desde = $1, hora_hasta = $2, fecha_desde = $3, fecha_hasta = $4, lunes = $5, martes = $6, miercoles = $7, jueves =$8, viernes = $9, sabado = $10 WHERE id_user = $11";
-                const queryResultUsersPuestos = yield pool.query(updateUsersPuestosQuery, [horaDesde, horaHasta, usersPuestos.fecha_desde, usersPuestos.fecha_hasta,
+                const updateUsersPuestosQuery = "UPDATE users_puestos SET hora_desde = $1, hora_hasta = $2, fecha_desde = $3, fecha_hasta = $4, id_puesto=$5, lunes = $6, martes = $7, miercoles = $8, jueves =$9, viernes = $10, sabado = $11 WHERE id_user = $12";
+                const queryResultUsersPuestos = yield pool.query(updateUsersPuestosQuery, [horaDesde, horaHasta, usersPuestos.fecha_desde, usersPuestos.fecha_hasta, usersPuestos.id_puesto,
                     usersPuestos.dias[0], usersPuestos.dias[1], usersPuestos.dias[2],
                     usersPuestos.dias[3], usersPuestos.dias[4], usersPuestos.dias[5], usersPuestos.id_user]);
                 console.log('users puestos updated');
@@ -416,4 +476,35 @@ function getAllPlanesAndGropus(req, res) {
     });
 }
 exports.getAllPlanesAndGropus = getAllPlanesAndGropus;
+function getAllGroupsAndPuestos(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            let groups = [];
+            let puestos = [];
+            const groupsQuery = `SELECT id, nombre, id_lider, cuit_cuil, id_oficina
+        FROM groups`;
+            const groupsQueryResult = yield pool.query(groupsQuery);
+            groups = groupsQueryResult.rows;
+            const puestosQuery = `SELECT id, nombre, numero
+        FROM puestos`;
+            const puestosQueryResult = yield pool.query(puestosQuery);
+            puestos = puestosQueryResult.rows;
+            const response = {
+                success: true,
+                puestos,
+                groups
+            };
+            res.status(200).json(response);
+        }
+        catch (err) {
+            console.log(err);
+            const response = {
+                success: false,
+                error: err
+            };
+            res.status(400).json(response);
+        }
+    });
+}
+exports.getAllGroupsAndPuestos = getAllGroupsAndPuestos;
 //# sourceMappingURL=coworkers.controller.js.map
