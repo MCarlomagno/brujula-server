@@ -50,19 +50,40 @@ export async function loginUser(req: any, res: any) {
     console.log(req.body);
     const email = req.body.email;
     const password = req.body.password;
-    const queryResultUser = await pool.query("SELECT id, nombre, email, password FROM users WHERE email = $1", [email]);
-    // TODO: validate
-    console.log('after query rows cournt: ' + queryResultUser.rowCount);
-    if (queryResultUser.rowCount === 0) {
-        return res.status(401).json({ message: "El usuario no existe" });
+
+    try {
+        const queryResultUser = await pool.query("SELECT id, nombre, apellido, email, password FROM users WHERE email = $1", [email]);
+
+        if (queryResultUser.rowCount === 0) {
+            return res.status(401).json({ message: "El usuario no existe" });
+        }
+        const userId = queryResultUser.rows[0].id;
+        const nombre = queryResultUser.rows[0].nombre;
+        const apellido = queryResultUser.rows[0].apellido;
+
+        const queryResultPassword = await pool.query("SELECT id FROM users WHERE password = crypt($1, password) AND id = $2;", [password, userId]);
+        if (queryResultPassword.rowCount === 0) {
+            return res.status(401).json({ message: "Contrasena incorrecta" });
+        }
+
+        const queryResultRoles = await pool.query("SELECT r.id, r.nombre FROM roles r INNER JOIN roles_users ru ON r.id = ru.id_rol WHERE ru.id_user = $1", [userId]);
+
+        const rol = queryResultRoles.rows[0].nombre;
+        const idRol = queryResultRoles.rows[0].id;
+
+        const token = sign({ id: userId, nombre, apellido, email , rol, id_rol: idRol}, process.env.SECRETKEY);
+        res.status(200).json({ message: "welcome", token, data: req.body })
     }
-    const userId = queryResultUser.rows[0].id;
-    const queryResultPassword = await pool.query("SELECT id FROM users WHERE password = crypt($1, password) AND id = $2;", [password, userId]);
-    if (queryResultPassword.rowCount === 0) {
-        return res.status(401).json({ message: "Contrasena incorrecta" });
+    catch(err) {
+        console.log(err);
+        const response = {
+            success: false,
+            error: err
+        }
+        res.status(400).json(response);
     }
-    const token = sign({ id: userId }, process.env.SECRETKEY);
-    res.status(200).json({ message: "welcome", token, data: req.body })
+
+
 }
 
 export async function forgotPassword(req: any, res: any) {
