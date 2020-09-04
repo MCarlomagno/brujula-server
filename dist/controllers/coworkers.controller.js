@@ -233,7 +233,6 @@ function createCoworker(req, res) {
                 selectedPlan.id = insertPlanQueryResult.rows[0].id;
                 coworker.id_plan = insertPlanQueryResult.rows[0].id;
             }
-            // insert query to users
             const insertCoworkerQuery = "INSERT INTO users (nombre, apellido, email, password, is_coworker, id_grupo, dni, fecha_nacimiento, direccion, celular, id_plan, horas_sala_consumidas, created_at) VALUES ($1, $2, $3, crypt($4, gen_salt('bf')), $5, $6, $7, $8, $9, $10, $11, $12, CURRENT_TIMESTAMP) RETURNING id;";
             const queryResult = yield pool.query(insertCoworkerQuery, [coworker.nombre, coworker.apellido, coworker.email, pass, coworker.is_coworker, coworker.id_grupo, coworker.dni, coworker.fecha_nacimiento, coworker.direccion, coworker.celular, coworker.id_plan, coworker.horas_sala_consumidas]);
             if (coworker.is_leader) {
@@ -243,6 +242,18 @@ function createCoworker(req, res) {
                 const updateIdLeader = "UPDATE groups SET id_lider=$1 WHERE id=$2";
                 const result = yield pool.query(updateIdLeader, [idLider, idGrupo]);
             }
+            /// START SET ROLES
+            /// TODO ROLE ADMIN
+            const id = queryResult.rows[0].id;
+            if (coworker.is_leader) {
+                const insertUsersRoles = "INSERT INTO roles_users (id_user, id_rol) VALUES ($1, 1)";
+                const resultinsertUsersRoles = yield pool.query(insertUsersRoles, [id]);
+            }
+            else {
+                const insertUsersRoles = "INSERT INTO roles_users (id_user, id_rol) VALUES ($1, 3)";
+                const resultinsertUsersRoles = yield pool.query(insertUsersRoles, [id]);
+            }
+            /// END SET ROLES
             if (coworker.id_plan !== 4) {
                 let idPuesto;
                 // if the admin didnt select puesto

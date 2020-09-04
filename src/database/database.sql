@@ -164,3 +164,5 @@ ALTER TABLE groups
 
 
 ALTER TABLE puestos ADD COLUMN numero INTEGER
+
+INSERT INTO roles (nombre) VALUES ('leader'),('admin'),('coworker');
