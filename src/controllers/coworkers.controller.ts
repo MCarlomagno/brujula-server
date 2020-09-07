@@ -427,6 +427,9 @@ export async function deleteCoworker(req: any, res: any) {
         const deletePlanQuery = 'DELETE FROM plans WHERE id = $1 AND is_custom = true';
         const deletePlanQueryResult = await pool.query(deletePlanQuery, [plan.id]);
 
+        const deleteRolesQuery = 'DELETE FROM roles_users WHERE id_user = $1';
+        const deleteRolesQueryResult = await pool.query(deleteRolesQuery, [idUser]);
+
         const deleteCoworkerQuery = 'DELETE FROM users WHERE id = $1';
         const deleteCoworkerQueryResult = await pool.query(deleteCoworkerQuery, [idUser]);
 
