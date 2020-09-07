@@ -415,6 +415,8 @@ function deleteCoworker(req, res) {
             const plan = selectPlanIdResult.rows[0];
             const deletePlanQuery = 'DELETE FROM plans WHERE id = $1 AND is_custom = true';
             const deletePlanQueryResult = yield pool.query(deletePlanQuery, [plan.id]);
+            const deleteRolesQuery = 'DELETE FROM roles_users WHERE id_user = $1';
+            const deleteRolesQueryResult = yield pool.query(deleteRolesQuery, [idUser]);
             const deleteCoworkerQuery = 'DELETE FROM users WHERE id = $1';
             const deleteCoworkerQueryResult = yield pool.query(deleteCoworkerQuery, [idUser]);
             // TODO implement delete on reservas, users roles
