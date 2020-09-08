@@ -361,10 +361,17 @@ export async function updateCoworker(req: any, res: any) {
                     // update query to groups (in case of group leader)
                     const updateIdLeader = "UPDATE groups SET id_lider=$1 WHERE id=$2";
                     const result = await pool.query(updateIdLeader, [idLider, idGrupo])
+
+                    const updateUsersRoles = "UPDATE roles_users SET id_rol = (SELECT id FROM roles WHERE nombre LIKE 'leader') WHERE id_user = $1";
+                    const resultUpdateUsersRoles = await pool.query(updateUsersRoles, [idCoworker]);
+
                 } else {
                     // if the user is leader and the role was changed, sets the group leader on null (no leader selected)
                     const updateIdLeader = "UPDATE groups SET id_lider=NULL WHERE id_lider=$1";
                     const resultUpdateIdLeader = await pool.query(updateIdLeader, [idCoworker])
+
+                    const updateUsersRoles = "UPDATE roles_users SET id_rol = (SELECT id FROM roles WHERE nombre LIKE 'coworker') WHERE id_user = $1";
+                    const resultUpdateUsersRoles = await pool.query(updateUsersRoles, [idCoworker]);
                 }
             } else {
                 // if the user is leader and the role was changed, sets the group leader on null (no leader selected)
