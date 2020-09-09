@@ -48,4 +48,4 @@ router.get('/reservation/byWeek', getReservationByWeek)
 router.get('/oficinas', getOficinas)
 
 /// Group Management
-router.get('/myGroupCoworkers', getGroupCoworkers)
+router.get('/myGroupCoworkers/:idLeader', getGroupCoworkers)

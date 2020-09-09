@@ -14,23 +14,17 @@ const pool = new Pool({
 
 export async function getGroupCoworkers(req: any, res: any) {
 
+    const idLeader = req.params.idLeader;
     // table filters
     const itemsPerPage = req.query.pageSize;
     const pageNumber = req.query.pageNumber;
     const order = req.query.sortOrder;
     const filter = req.query.filter;
-
-    let group = req.query.group;
     const bornDate = req.query.bornDate;
     let plan = req.query.plan;
+    let groupId = 0;
 
     try {
-
-        if (group === 'null') {
-            group = 0;
-        } else {
-            group = parseInt(group, 10);
-        }
 
         if (plan === 'null') {
             plan = 0;
@@ -40,6 +34,20 @@ export async function getGroupCoworkers(req: any, res: any) {
             if (plan === 0) {
                 plan = -1;
             }
+        }
+
+        // selects the group id to filter
+        if (idLeader !== 'null') {
+            const groupsQuery = 'SELECT id FROM groups WHERE id_lider = $1';
+            const groupsQueryResult = await pool.query(groupsQuery, [idLeader]);
+            groupId = groupsQueryResult.rows[0].id;
+        } else {
+            console.log('no leader selected');
+            const responseErr = {
+                success: false,
+                error: 'no leader selected'
+            };
+            res.status(400).json(responseErr)
         }
 
 
@@ -56,7 +64,7 @@ export async function getGroupCoworkers(req: any, res: any) {
                     ORDER BY u.created_at DESC
                     LIMIT $1 OFFSET ($2::numeric * $1)`;
         let queryResult;
-        queryResult = await pool.query(query, [itemsPerPage, pageNumber, filter, plan, group, bornDate]);
+        queryResult = await pool.query(query, [itemsPerPage, pageNumber, filter, plan, groupId, bornDate]);
 
 
 
@@ -70,7 +78,7 @@ export async function getGroupCoworkers(req: any, res: any) {
                     AND ($4 LIKE 'null' OR DATE_PART('day', u.fecha_nacimiento) = DATE_PART('day',TO_TIMESTAMP($4, 'YYYY-MM-DD"T"HH24:MI:SS"Z"')) AND DATE_PART('month', u.fecha_nacimiento) = DATE_PART('month',TO_TIMESTAMP($4, 'YYYY-MM-DD"T"HH24:MI:SS"Z"')))`;
 
         let countQueryResult;
-        countQueryResult = await pool.query(countQuery, [filter, plan, group, bornDate]);
+        countQueryResult = await pool.query(countQuery, [filter, plan, groupId, bornDate]);
 
 
 
