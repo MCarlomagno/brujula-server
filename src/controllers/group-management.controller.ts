@@ -101,4 +101,28 @@ export async function getGroupCoworkers(req: any, res: any) {
         res.status(400).json(response)
     }
 
+
+
+}
+
+
+export async function updateCoworkerHours(req: any, res: any) {
+
+    const coworkers = req.body.coworkers;
+    try {
+
+        const response = {
+            success: true,
+        }
+
+        res.status(200).json(response);
+    }
+    catch (err) {
+        console.log(err);
+        const response = {
+            success: false,
+            error: err
+        };
+        res.status(400).json(response)
+    }
 }

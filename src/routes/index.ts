@@ -5,7 +5,7 @@ import { getGroups, getGroupsCount, createGroup, deleteGroup, getAllGroups, getG
 import { getSalas } from '../controllers/salas.controller';
 import { createReservation, getReservationByWeek } from '../controllers/reservation.controller';
 import { getOficinas } from '../controllers/oficinas.controller';
-import { getGroupCoworkers } from '../controllers/group-management.controller';
+import { getGroupCoworkers, updateCoworkerHours } from '../controllers/group-management.controller';
 
 export const router = Router();
 
@@ -49,3 +49,4 @@ router.get('/oficinas', getOficinas)
 
 /// Group Management
 router.get('/myGroupCoworkers/:idLeader', getGroupCoworkers)
+router.get('/updateCoworkerHours', updateCoworkerHours)
