@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getGroupCoworkers = void 0;
+exports.updateCoworkerHours = exports.getGroupCoworkers = void 0;
 const pg_1 = require("pg");
 const pool = new pg_1.Pool({
     host: process.env.DBHOST || 'localhost',
@@ -98,4 +98,24 @@ function getGroupCoworkers(req, res) {
     });
 }
 exports.getGroupCoworkers = getGroupCoworkers;
+function updateCoworkerHours(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const coworkers = req.body.coworkers;
+        try {
+            const response = {
+                success: true,
+            };
+            res.status(200).json(response);
+        }
+        catch (err) {
+            console.log(err);
+            const response = {
+                success: false,
+                error: err
+            };
+            res.status(400).json(response);
+        }
+    });
+}
+exports.updateCoworkerHours = updateCoworkerHours;
 //# sourceMappingURL=group-management.controller.js.map
