@@ -102,8 +102,34 @@ function updateCoworkerHours(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const coworkers = req.body.coworkers;
         try {
+            for (const cow of coworkers) {
+                console.log('actualiza coworker:');
+                console.log(cow.id);
+                console.log(cow.id_plan);
+                console.log(cow.horas_sala);
+                /// get the user plan
+                const queryPlan = 'SELECT p.id, p.is_custom FROM plans p WHERE p.id = $1';
+                const queryPlanResult = yield pool.query(queryPlan, [cow.id_plan]);
+                const isCustom = queryPlanResult.rows[0].is_custom;
+                /// check id the plan is custom
+                if (isCustom) {
+                    /// if is custom, update it directly
+                    const coworkerHoursQuery = "UPDATE plans p SET horas_sala = $2 FROM users u WHERE u.id = $1 AND u.id_plan = p.id";
+                    const countQueryResult = yield pool.query(coworkerHoursQuery, [cow.id, cow.horas_sala]);
+                }
+                else {
+                    /// else create a custom plan for him
+                    const createCustomPlanQuery = "INSERT INTO plans (horas_sala, is_custom, nombre, descripcion) VALUES ($1, true, 'Personalizado', 'Personalizado') RETURNING id";
+                    const createCustomPlanQueryResult = yield pool.query(createCustomPlanQuery, [cow.horas_sala]);
+                    const planId = createCustomPlanQueryResult.rows[0].id;
+                    /// and then assing the id to the id_plan
+                    const updateIdPlanQuery = "UPDATE users SET id_plan = $1 WHERE id = $2";
+                    const updateIdPlanQueryResult = yield pool.query(updateIdPlanQuery, [planId, cow.id]);
+                }
+            }
             const response = {
                 success: true,
+                coworkers
             };
             res.status(200).json(response);
         }
