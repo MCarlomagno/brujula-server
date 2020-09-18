@@ -44,4 +44,5 @@ exports.router.get('/reservation/byWeek', reservation_controller_1.getReservatio
 exports.router.get('/oficinas', oficinas_controller_1.getOficinas);
 /// Group Management
 exports.router.get('/myGroupCoworkers/:idLeader', group_management_controller_1.getGroupCoworkers);
+exports.router.put('/updateCoworkerHours', group_management_controller_1.updateCoworkerHours);
 //# sourceMappingURL=index.js.map

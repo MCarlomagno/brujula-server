@@ -49,4 +49,4 @@ router.get('/oficinas', getOficinas)
 
 /// Group Management
 router.get('/myGroupCoworkers/:idLeader', getGroupCoworkers)
-router.get('/updateCoworkerHours', updateCoworkerHours)
+router.put('/updateCoworkerHours', updateCoworkerHours)
