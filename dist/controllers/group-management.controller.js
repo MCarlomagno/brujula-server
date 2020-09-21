@@ -103,10 +103,6 @@ function updateCoworkerHours(req, res) {
         const coworkers = req.body.coworkers;
         try {
             for (const cow of coworkers) {
-                console.log('actualiza coworker:');
-                console.log(cow.id);
-                console.log(cow.id_plan);
-                console.log(cow.horas_sala);
                 /// get the user plan
                 const queryPlan = 'SELECT p.id, p.is_custom FROM plans p WHERE p.id = $1';
                 const queryPlanResult = yield pool.query(queryPlan, [cow.id_plan]);
